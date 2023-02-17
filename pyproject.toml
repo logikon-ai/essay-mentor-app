@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "essay-mentor-app"
+version = "0.1.0"
+description = "Streamlit App for Essay Tutorial and Authorship Recognitionnn"
+authors = ["Gregor Betz <gregor.betz@gmail.com>"]
+readme = "README.md"
+packages = [{include = "essay_mentor_app"}]
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.9.7 || >3.9.7,<4.0"
+streamlit = "^1.18.1"
+streamlit-ace = "^0.1.1"
+Markdown = "^3.4.1"
+beautifulsoup4 = "^4.11.2"
+markdownify = "^0.11.6"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.2.1"
+mypy = "^1.0.0"
+black = "^23.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
