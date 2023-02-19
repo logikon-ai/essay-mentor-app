@@ -5,6 +5,14 @@ from typing import List
 import dataclasses
 
 @dataclasses.dataclass
+class EssayContentItem:
+    uid: str
+    name: str
+    text: str
+    html: str
+    heading_level: int = 0
+
+@dataclasses.dataclass
 class MainQuestion:
     uid: str
     text: str
@@ -38,6 +46,7 @@ class TORebuttalGist(Gist):
 class ArgumentativeEssayAnalysis:
     essaytext_md: str = ""
     essaytext_html: str = ""
+    essay_content_items: List[EssayContentItem] = dataclasses.field(default_factory=list)
     main_questions: List[MainQuestion] = dataclasses.field(default_factory=list)
     main_claims: List[MainClaim] = dataclasses.field(default_factory=list)
     reasons: List[FOReasonGist] = dataclasses.field(default_factory=list)

@@ -6,7 +6,7 @@ import markdownify
 import streamlit as st
 
 from backend.aea_datamodel import ArgumentativeEssayAnalysis
-from backend.components import display_essay
+from backend.components import display_essay, parse_essay_content
 
 st.set_page_config(
     page_title="Welcome",
@@ -17,8 +17,8 @@ def main():
 
     st.session_state.update(st.session_state)
 
-    st.title('Essay Mentor')
-    st.write('**This AI Co-Tutor supports you in writing better essays, and your teacher in grading them.**')
+    st.title('TESSY – Essay Tutor')
+    st.write('**The AI Co-Tutor that supports you in writing better essays, and your teacher in grading them.**')
 
     if not "aea" in st.session_state:
         st.session_state["aea"] = ArgumentativeEssayAnalysis()
@@ -63,8 +63,10 @@ def main():
 
 
         if st.button("Proceed with this text"):
-            st.session_state.aea.essaytext_md = essay_raw
-            st.session_state.aea.essaytext_html = essay_html
+            aea: ArgumentativeEssayAnalysis = st.session_state.aea
+            aea.essaytext_md = essay_raw
+            aea.essaytext_html = essay_html
+            aea.essay_content_items = parse_essay_content(essay_html)
 
         st.write("------")
         st.write("Debugging:")
