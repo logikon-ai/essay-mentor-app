@@ -3,12 +3,17 @@
 from typing import List
 
 import streamlit as st
+from streamlit_extras.switch_page_button import switch_page
 import uuid
 
 from essay_mentor_app.backend.aea_datamodel import (
     ArgumentativeEssayAnalysis,
     MainClaim,
     MainQuestion,
+)
+
+from essay_mentor_app.backend.components import (
+    clear_associated_keys
 )
 
 st.session_state.update(st.session_state)
@@ -44,12 +49,31 @@ if aea.main_questions or aea.main_claims:
     for claim in aea.main_claims:
         st.write(f"* {claim.text}")
 
-    st.stop()
+    if st.button("Revise main question or claims"):
+        clear_associated_keys(aea.objections)
+        aea.objections = []
+        clear_associated_keys(aea.rebuttals)
+        aea.rebuttals = []
+        clear_associated_keys(aea.reasons)
+        aea.reasons = []
+        aea.main_questions = []
+        aea.main_claims = []
+        st.experimental_rerun()
+    if aea.reasons:
+        st.caption("(Revision will delete any data that has been entered on pages hereafter.)")
 
 
-st.write(
-    "What is your essay all about? — Enter the main question you address below. "
-    "Also, summarize the answers you discuss in the form of central claims. "
+    if aea.main_questions or aea.main_claims:
+        st.stop()
+
+
+st.info(
+    "What is your essay all about?",
+    icon="❔"
+)
+st.caption(
+    "Below, enter the main question you address in the essay. "
+    "Summarize the answers you discuss in the form of central claims. "
     "List only independent claims, i.e., answers you argue for without resort "
     "to each other."
 )
@@ -72,30 +96,40 @@ i=0.2
 status_text.text("%i%% Complete" % i)
 progress_bar.progress(i)
 
-
 if main_question_txt and main_claims_txt:
+    n_claims = len([x for x in main_claims_txt.splitlines() if x])
+    st.success(
+        str(f"Main question and {n_claims} central claim(s) recognized.")
+    )
+elif not main_question_txt:
+    st.warning("Main question is missing.")
+elif not main_claims_txt:
+    st.warning("Central claims are missing.")
 
-    if st.button("Proceed with this question and claims"):
 
-        main_question = MainQuestion(
-            uid=str(uuid.uuid4()),
-            text=main_question_txt,
-        )
+if st.button(
+    "Use this input and proceed with next step",
+    disabled=not(main_question_txt and main_claims_txt)
+):
 
-        main_claims: List[MainClaim] = []
-        for claim in main_claims_txt.splitlines():
-            if claim.strip():
-                main_claims.append(
-                    MainClaim(
-                        uid=str(uuid.uuid4()),
-                        text=claim,
-                        question_refs=[main_question.uid],
-                    )
+    main_question = MainQuestion(
+        text=main_question_txt,
+    )
+
+    main_claims: List[MainClaim] = []
+    for claim in main_claims_txt.splitlines():
+        if claim.strip():
+            main_claims.append(
+                MainClaim(
+                    text=claim,
+                    question_refs=[main_question.uid],
                 )
-                main_question.claim_refs.append(main_claims[-1].uid)
+            )
+            main_question.claim_refs.append(main_claims[-1].uid)
 
-        aea.main_questions = [main_question]
-        aea.main_claims = main_claims
+    aea.main_questions = [main_question]
+    aea.main_claims = main_claims
+    switch_page("Summarize Primary Arguments")
 
 
 

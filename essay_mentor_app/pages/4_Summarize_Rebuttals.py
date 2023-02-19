@@ -3,11 +3,17 @@
 from typing import List
 
 import streamlit as st
-import uuid
+from streamlit_extras.switch_page_button import switch_page
 
 from essay_mentor_app.backend.aea_datamodel import (
     ArgumentativeEssayAnalysis,
-    TORebuttalGist,
+    Reason,
+)
+
+from essay_mentor_app.backend.components import (
+    display_reasons,
+    input_reasons,
+    clear_associated_keys,
 )
 
 st.session_state.update(st.session_state)
@@ -26,10 +32,10 @@ status_text = st.sidebar.empty()
 
 
 
-if not aea.main_claims:
+if not aea.objections:
     st.write(
         "In order to summarize rebuttals, "
-        "you need to detail the objections you discuss first. "
+        "you need to detail first the objections you discuss. "
         "Please go back to the previous page to do so."
     )
     st.stop()
@@ -37,57 +43,38 @@ if not aea.main_claims:
 
 if aea.rebuttals:
     st.write("#### Your rebuttals:")
-    for objection in aea.objections:
-        st.write(f"*Objection*: {objection.text}")
-        for rebuttal in aea.rebuttals:
-            if rebuttal.soo_ref == objection.uid:
-                st.write(f"* {rebuttal.text}")
+    display_reasons(aea.rebuttals, aea.objections, parent_name="objection")
 
-    st.stop()
+    if st.button("Revise objections"):
+        clear_associated_keys(aea.rebuttals)
+        aea.rebuttals = []
+        st.experimental_rerun()
+    st.caption("(Revision will delete any data that has been entered on pages hereafter.)")
 
+    if aea.rebuttals:
+        st.stop()
 
-st.write("Which rebuttals to each objections do you present?")
-st.write("If none, proceed with step 'Connect Arguments to Text'")
+st.info(
+    "Which rebuttals to each objection do you present?",
+    icon="❔"
+)
 
-rebuttals_txts = []
-for e, objection in enumerate(aea.objections):
-    with st.expander(f"Objection {e+1}: {objection.text}"):
-        rebuttals_txts.append(
-            st.text_area(
-                f"Summarize rebuttals to this objection here (separated by empty lines)",
-                height=120,
-                key=f"rebuttals_txts_{objection.uid}"
-            )
-        )
+rebuttals, skip = input_reasons(
+    parent_list=aea.objections,
+    parent_name="objection",
+    reason_name="rebuttal",
+    expanded=False,
+    with_skip_button=True,
+)
 
-
-
-# dummy siedbar info:
-i=0.2
-status_text.text("%i%% Complete" % i)
-progress_bar.progress(i)
+if skip:
+    switch_page("Connect Arguments To Text")
 
 
-if any(rebuttals_txt for rebuttals_txt in rebuttals_txts):
-
-    if st.button("Proceed with these rebuttals"):
-
-        for e, objection in enumerate(aea.objections):
-            if rebuttals_txts[e]:
-                for raw_rebuttal in rebuttals_txts[e].splitlines():
-                    if raw_rebuttal.strip():
-                        aea.rebuttals.append(
-                            TORebuttalGist(
-                                uid=str(uuid.uuid4()),
-                                text=raw_rebuttal,
-                                soo_ref=objection.uid,
-                            )
-                        )
+if rebuttals:
+    aea.rebuttals = rebuttals
+    switch_page("Connect Arguments To Text")
 
 
-st.write("-------")
 
-with st.expander("Debugging"):
-    aea: ArgumentativeEssayAnalysis = st.session_state.aea
-    for rebuttal in aea.rebuttals:
-        st.json(rebuttal.__dict__)
+

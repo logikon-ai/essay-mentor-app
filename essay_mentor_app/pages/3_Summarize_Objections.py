@@ -3,11 +3,18 @@
 from typing import List
 
 import streamlit as st
+from streamlit_extras.switch_page_button import switch_page
 import uuid
 
 from essay_mentor_app.backend.aea_datamodel import (
     ArgumentativeEssayAnalysis,
-    SOObjectionGist,
+    Reason,
+)
+
+from essay_mentor_app.backend.components import (
+    display_reasons,
+    input_reasons,
+    clear_associated_keys,
 )
 
 st.session_state.update(st.session_state)
@@ -28,7 +35,7 @@ status_text = st.sidebar.empty()
 # main page
 
 
-if not aea.main_claims:
+if not aea.reasons:
     st.write(
         "In order to summarize objections, "
         "you need to detail your primary arguments first. "
@@ -39,57 +46,38 @@ if not aea.main_claims:
 
 if aea.objections:
     st.write("#### Your objections:")
-    for reason in aea.reasons:
-        st.write(f"*Primary argument*: {reason.text}")
-        for objection in aea.objections:
-            if objection.for_ref == reason.uid:
-                st.write(f"* {objection.text}")
+    display_reasons(aea.objections, aea.reasons, parent_name="primary argument")
 
-    st.stop()
+    if st.button("Revise objections"):
+        clear_associated_keys(aea.rebuttals)
+        aea.rebuttals = []
+        clear_associated_keys(aea.objections)
+        aea.objections = []
+        st.experimental_rerun()
+    if aea.rebuttals:
+        st.caption("(Revision will delete any data that has been entered on pages hereafter.)")
 
+    if aea.objections:
+        st.stop()
 
-st.write("Which objections to each primary argument do you discuss?")
-st.write("If none, proceed with step 'Connect Arguments to Text'")
+st.info(
+    "Which objections to each primary argument do you discuss?",
+    icon="❔"
+)
 
-objections_txts = []
-for e, reason in enumerate(aea.reasons):
-    with st.expander(f"Primary argument {e+1}: {reason.text}"):
-        objections_txts.append(
-            st.text_area(
-                f"Summarize objections to this argument here (separated by empty lines)",
-                height=120,
-                key=f"objections_txt_{reason.uid}"
-            )
-        )
+objections, skip = input_reasons(
+    parent_list=aea.reasons,
+    parent_name="primary argument",
+    reason_name="objection",
+    expanded=False,
+    with_skip_button=True,
+)
 
-
-
-# dummy siedbar info:
-i=0.2
-status_text.text("%i%% Complete" % i)
-progress_bar.progress(i)
-
-
-if any(objections_txt for objections_txt in objections_txts):
-
-    if st.button("Proceed with these objections"):
-
-        for e, reason in enumerate(aea.reasons):
-            if objections_txts[e]:
-                for raw_obj in objections_txts[e].splitlines():
-                    if raw_obj.strip():
-                        aea.objections.append(
-                            SOObjectionGist(
-                                uid=str(uuid.uuid4()),
-                                text=raw_obj,
-                                for_ref=reason.uid,
-                            )
-                        )
+if skip:
+    switch_page("Connect Arguments To Text")
 
 
-st.write("-------")
+if objections:
+    aea.objections = objections
+    switch_page("Summarize Rebuttals")
 
-with st.expander("Debugging"):
-    aea: ArgumentativeEssayAnalysis = st.session_state.aea
-    for objection in aea.objections:
-        st.json(objection.__dict__)

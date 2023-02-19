@@ -2,12 +2,18 @@
 
 from typing import List
 
+import copy
 import streamlit as st
-import uuid
+from streamlit_extras.switch_page_button import switch_page
 
 from essay_mentor_app.backend.aea_datamodel import (
     ArgumentativeEssayAnalysis,
-    FOReasonGist,
+    Reason,
+)
+from essay_mentor_app.backend.components import (
+    display_reasons,
+    input_reasons,
+    clear_associated_keys,
 )
 
 st.session_state.update(st.session_state)
@@ -27,6 +33,10 @@ status_text = st.sidebar.empty()
 
 # main page
 
+# dummy update sidebar info:
+i=0.2
+status_text.text("%i%% Complete" % i)
+progress_bar.progress(i)
 
 if not aea.main_claims:
     st.write(
@@ -35,61 +45,38 @@ if not aea.main_claims:
     )
     st.stop()
 
-
 if aea.reasons:
     st.write("#### Your primary arguments:")
-    for claim in aea.main_claims:
-        st.write(f"*claim*: {claim.text}")
-        for reason in aea.reasons:
-            if reason.claim_ref == claim.uid:
-                st.write(f"* {reason.text}")
+    display_reasons(aea.reasons, aea.main_claims, parent_name="claim")
 
-    st.stop()
+    if st.button("Revise primary arguments"):
+        clear_associated_keys(aea.objections)
+        aea.objections = []
+        clear_associated_keys(aea.rebuttals)
+        aea.rebuttals = []
+        clear_associated_keys(aea.reasons)
+        aea.reasons = []
+        st.experimental_rerun()
+    if aea.objections:
+        st.caption("(Revision will delete any data that has been entered on pages hereafter.)")
 
+    if aea.reasons:
+        st.stop()
 
-st.write(
-    "What are your arguments for each central claim?"
+st.info(
+    "What are your arguments for each central claim?",
+    icon="❔"
 )
 
-reasons_txts = []
-for e, claim in enumerate(aea.main_claims):
-    with st.expander(f"Claim {e+1}: {claim.text}", expanded=True):
-        reasons_txts.append(
-            st.text_area(
-                f"Summarize arguments for this claim here (separated by empty lines)",
-                height=120,
-                key=f"reasons_txt_{claim.uid}"
-            )
-        )
+reasons, _ = input_reasons(
+    parent_list=aea.main_claims,
+    parent_name="claim",
+    reason_name="primary argument",
+    expanded=True,
+)
+
+if reasons:
+    aea.reasons = reasons
+    switch_page("Summarize Objections")
 
 
-
-# dummy siedbar info:
-i=0.2
-status_text.text("%i%% Complete" % i)
-progress_bar.progress(i)
-
-
-if any(reasons_txt for reasons_txt in reasons_txts):
-
-    if st.button("Proceed with these primary arguments"):
-
-        for e, claim in enumerate(aea.main_claims):
-            if reasons_txts[e]:
-                for raw_reason in reasons_txts[e].splitlines():
-                    if raw_reason.strip():
-                        aea.reasons.append(
-                            FOReasonGist(
-                                uid=str(uuid.uuid4()),
-                                text=raw_reason,
-                                claim_ref=claim.uid,
-                            )
-                        )
-
-
-st.write("-------")
-
-with st.expander("Debugging"):
-    aea: ArgumentativeEssayAnalysis = st.session_state.aea
-    for reason in aea.reasons:
-        st.json(reason.__dict__)
