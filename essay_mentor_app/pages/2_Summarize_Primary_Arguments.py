@@ -72,7 +72,7 @@ reasons, _ = input_reasons(
     parent_list=aea.main_claims,
     parent_name="claim",
     reason_name="primary argument",
-    expanded=True,
+    expanded_per_default=True,
 )
 
 if reasons:

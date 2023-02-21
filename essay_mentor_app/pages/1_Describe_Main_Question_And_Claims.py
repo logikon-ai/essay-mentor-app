@@ -116,13 +116,16 @@ if st.button(
         text=main_question_txt,
     )
 
+    counter = 0
     main_claims: List[MainClaim] = []
     for claim in main_claims_txt.splitlines():
         if claim.strip():
+            counter += 1
             main_claims.append(
                 MainClaim(
                     text=claim,
                     question_refs=[main_question.uid],
+                    label=f"Claim{counter}",
                 )
             )
             main_question.claim_refs.append(main_claims[-1].uid)

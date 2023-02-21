@@ -61,7 +61,7 @@ if aea.objections:
         st.stop()
 
 st.info(
-    "Which objections to each primary argument do you discuss?",
+    "Which objections to each primary argument do you discuss (if any)?",
     icon="❔"
 )
 
@@ -69,7 +69,7 @@ objections, skip = input_reasons(
     parent_list=aea.reasons,
     parent_name="primary argument",
     reason_name="objection",
-    expanded=False,
+    expanded_per_default=False,
     with_skip_button=True,
 )
 

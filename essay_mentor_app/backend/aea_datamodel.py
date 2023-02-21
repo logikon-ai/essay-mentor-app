@@ -28,12 +28,16 @@ class MainQuestion(BaseContentItem):
 
 
 @dataclasses.dataclass
-class MainClaim(BaseContentItem):
+class MapContentItem(BaseContentItem):
+    label: str
+
+@dataclasses.dataclass
+class MainClaim(MapContentItem):
     question_refs: List[str] = dataclasses.field(default_factory=list)
 
 
 @dataclasses.dataclass
-class Reason(BaseContentItem):
+class Reason(MapContentItem):
     parent_uid: str
     essay_text_refs: List[str] = dataclasses.field(default_factory=list)
 
@@ -48,3 +52,9 @@ class ArgumentativeEssayAnalysis:
     reasons: List[Reason] = dataclasses.field(default_factory=list)
     objections: List[Reason] = dataclasses.field(default_factory=list)
     rebuttals: List[Reason] = dataclasses.field(default_factory=list)
+
+    def get_reason_by_uid(self, uid: str) -> Reason:
+        for reason in self.reasons + self.objections + self.rebuttals:
+            if reason.uid == uid:
+                return reason
+        raise ValueError(f"Could not find reason with uid {uid}")

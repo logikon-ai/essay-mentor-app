@@ -55,7 +55,7 @@ if aea.rebuttals:
         st.stop()
 
 st.info(
-    "Which rebuttals to each objection do you present?",
+    "Which rebuttals to each objection do you present (if any)?",
     icon="❔"
 )
 
@@ -63,7 +63,7 @@ rebuttals, skip = input_reasons(
     parent_list=aea.objections,
     parent_name="objection",
     reason_name="rebuttal",
-    expanded=False,
+    expanded_per_default=False,
     with_skip_button=True,
 )
 
