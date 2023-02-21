@@ -7,7 +7,15 @@ GUARDIAN1: str = """
 
 "The tragic death of Awaab Ishak should never have happened,” Michael Gove
 said recently during a visit to Rochdale. Despite repeated complaints from
-Awaab’s father about the black mould that ultimately caused the death of his two-year-old son, Rochdale Borough Housing failed to act. The problems in England’s social housing extend far beyond this single tragedy. Formal complaints to the housing ombudsman about damp and mould doubled this year. The TV programme “Help! My Home is Disgusting!” tells of insect infestations, overflowing plumbing and leaks. In January, the housing ombudsman found Clarion, the UK’s largest social landlord, responsible for “severe maladministration” for the third time in three months.
+Awaab’s father about the black mould that ultimately caused the death of his
+two-year-old son, Rochdale Borough Housing failed to act.
+
+The problems in England’s social housing extend far beyond this single
+tragedy. Formal complaints to the housing ombudsman about damp and mould
+doubled this year. The TV programme “Help! My Home is Disgusting!” tells of
+insect infestations, overflowing plumbing and leaks. In January, the housing
+ombudsman found Clarion, the UK’s largest social landlord, responsible
+for “severe maladministration” for the third time in three months.
 
 Mr Gove has now pledged to introduce “Awaab’s law”, an amendment to the
 social housing regulation bill that will require landlords to fix health
@@ -30,8 +38,9 @@ the result of funding pressures. In 2011, the government slashed funding
 for subsidised housing and redirected remaining funds away from social rent
 and towards more expensive “affordable” housing. This forced housing
 associations to borrow in order to build, using tenants’ rent to pay off
-borrowing costs instead of investing in existing homes. As housing
-associations have merged and grown, local offices have been centralised.
+borrowing costs instead of investing in existing homes.
+
+As housing associations have merged and grown, local offices have been centralised.
 Complaints become easier to ignore when registered in a distant call centre.
 “Tenants’ voices can too easily be drowned out,” the NHF admitted.
 

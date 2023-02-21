@@ -24,9 +24,9 @@ aea: ArgumentativeEssayAnalysis = st.session_state.aea
 
 ## status bar 
 
-st.sidebar.header("Primary Arguments")
-progress_bar = st.sidebar.progress(0)
-status_text = st.sidebar.empty()
+#st.sidebar.header("Primary Arguments")
+#progress_bar = st.sidebar.progress(0)
+#status_text = st.sidebar.empty()
 
 
 
@@ -34,9 +34,9 @@ status_text = st.sidebar.empty()
 # main page
 
 # dummy update sidebar info:
-i=0.2
-status_text.text("%i%% Complete" % i)
-progress_bar.progress(i)
+#i=0.2
+#status_text.text("%i%% Complete" % i)
+#progress_bar.progress(i)
 
 if not aea.main_claims:
     st.write(
@@ -47,7 +47,7 @@ if not aea.main_claims:
 
 if aea.reasons:
     st.write("#### Your primary arguments:")
-    display_reasons(aea.reasons, aea.main_claims, parent_name="claim")
+    display_reasons(aea.reasons, aea.main_claims, parent_name="claim", reason_name="primary argument")
 
     if st.button("Revise primary arguments"):
         clear_associated_keys(aea.objections)

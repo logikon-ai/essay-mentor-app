@@ -1,5 +1,9 @@
 import logging
 
+import plotly.graph_objects as go
+import pandas as pd
+
+
 import markdown
 import streamlit as st
 from streamlit_extras.switch_page_button import switch_page
@@ -20,13 +24,19 @@ def main():
     st.title('TESSY – Essay Tutor')
     st.write('**The AI Co-Tutor that supports you in writing better essays, and your teacher in grading them.**')
 
+
+
+
+
+
+
     if not "aea" in st.session_state:
         st.session_state["aea"] = ArgumentativeEssayAnalysis()
 
     if st.session_state.aea.essay_content_items:
         st.write("(Reload this page to start over with another text.)")
-        st.write("## Your Essay:")
         st.write("------")
+        st.write("*The essay that's currently being processed*:")
         display_essay(
             st.session_state.aea.essay_content_items,
             # reasons=[

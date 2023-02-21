@@ -1,6 +1,7 @@
 # page 3
 
 import streamlit as st
+from streamlit_extras.switch_page_button import switch_page
 st.session_state.update(st.session_state)
 
 from essay_mentor_app.backend.aea_datamodel import (
@@ -60,8 +61,10 @@ if reason_assignments:
             for reason_uid in uids:
                 reason = aea.get_reason_by_uid(reason_uid)
                 reason.essay_text_refs.append(essay_text_uid)
+        switch_page("Evaluate")
+
 # Debugging:
-st.json(reason_assignments)
+#st.json(reason_assignments)
 
 
 

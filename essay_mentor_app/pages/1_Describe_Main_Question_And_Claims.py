@@ -24,9 +24,9 @@ aea: ArgumentativeEssayAnalysis = st.session_state.aea
 
 ## status bar 
 
-st.sidebar.header("Main Question and Claims")
-progress_bar = st.sidebar.progress(0)
-status_text = st.sidebar.empty()
+#st.sidebar.header("Main Question and Claims")
+#progress_bar = st.sidebar.progress(0)
+#status_text = st.sidebar.empty()
 
 
 
@@ -47,7 +47,7 @@ if aea.main_questions or aea.main_claims:
     st.write(aea.main_questions[0].text)
     st.write("#### Your central claims:")
     for claim in aea.main_claims:
-        st.write(f"* {claim.text}")
+        st.write(f"* **\[{claim.label}\]**: {claim.text}")
 
     if st.button("Revise main question or claims"):
         clear_associated_keys(aea.objections)
@@ -92,9 +92,9 @@ main_claims_txt = st.text_area(
 
 
 # dummy siedbar info:
-i=0.2
-status_text.text("%i%% Complete" % i)
-progress_bar.progress(i)
+#i=0.2
+#status_text.text("%i%% Complete" % i)
+#progress_bar.progress(i)
 
 if main_question_txt and main_claims_txt:
     n_claims = len([x for x in main_claims_txt.splitlines() if x])
@@ -136,11 +136,11 @@ if st.button(
 
 
 
-st.write("-------")
+#st.write("-------")
 
-with st.expander("Debugging"):
-    aea: ArgumentativeEssayAnalysis = st.session_state.aea
-    if aea.main_questions:
-        st.json(aea.main_questions[0].__dict__)
-    for claim in aea.main_claims:
-        st.json(claim.__dict__)
+#with st.expander("Debugging"):
+#    aea: ArgumentativeEssayAnalysis = st.session_state.aea
+#    if aea.main_questions:
+#        st.json(aea.main_questions[0].__dict__)
+#    for claim in aea.main_claims:
+#        st.json(claim.__dict__)

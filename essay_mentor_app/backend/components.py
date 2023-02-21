@@ -3,7 +3,8 @@
 from typing import List, Tuple, Union, Optional, Dict
 
 from bs4 import BeautifulSoup
-import markdownify
+import plotly.graph_objects as go
+import pandas as pd
 import streamlit as st
 from streamlit_extras.switch_page_button import switch_page
 import uuid
@@ -40,17 +41,21 @@ def clear_associated_keys(content_elements: List[BaseContentItem]):
 def parse_essay_content(essay_html) -> List[EssayContentItem]:
     soup = BeautifulSoup(essay_html, 'html.parser')
     content_items = []
+    counter = 0
     for element in soup.find_all(['h1','h2','h3','h4','p','ul','ol']):
         html=str(element)
         level = 0
         if element.name in ['h1','h2','h3','h4']:
             level = ['h1','h2','h3','h4'].index(element.name) + 1
+        else:
+            counter += 1
         content_items.append(
             EssayContentItem(
                 name=element.name,
                 text=element.text,
                 html=html,
                 heading_level=level,
+                label=f"{counter:03d}" if level==0 else "",
             )
         )
     return content_items
@@ -90,7 +95,7 @@ def display_essay(
                 st.write("\n")
 
             icon = "¶" if element.name=='p' else "⋮"
-            summary = f"{icon}  {element.text[:24]}..."
+            summary = f"{icon} {element.label}  {element.text[:32]}..."
             paragraph_placeholder.write(
                 f"<details><summary>{summary}</summary>{element.text}</details>",
                 unsafe_allow_html=True
@@ -107,17 +112,19 @@ def display_essay(
 def display_reasons(
     reasons: List[Reason],
     parent_list: List[BaseContentItem],
+    reason_name: str = "argument",
     parent_name: str = "parent",
-    next_page_label: str = None,
 ):
+    reason_name = reason_name[:1].upper()+reason_name[1:]
     for parent in parent_list:
-        st.write(f"*{parent_name}*: {parent.text}")
         list_items = [
-            f"* {reason.text}"
+            f"* **\[{reason.label}\]**: {reason.text}"
             for reason in reasons
             if reason.parent_uid == parent.uid
         ]
-        st.write("\n".join(list_items))
+        if list_items:
+            st.write(f"{reason_name}s that address {parent_name} \[{parent.label}\] ({parent.text}):")
+            st.write("\n".join(list_items))
 
 
 def display_reasons_hierarchy(
@@ -206,3 +213,114 @@ def input_reasons(
                         )
 
     return reasons, button_skip
+
+def display_essay_annotation_figure(
+    essay: List[EssayContentItem],
+    reasons: List[Reason] = None,
+    objections: List[Reason] = None,
+    rebuttals: List[Reason] = None,
+):
+    essay_content_items = [
+        element for element in essay
+        if element.name not in ['h1','h2','h3','h4']
+    ]
+    essay_content_uids = [element.uid for element in essay_content_items]
+
+    data = []
+    for reason in reasons:
+        if reason.essay_text_refs:
+            for ref in reason.essay_text_refs:
+                if ref in essay_content_uids:
+                    essay_item = next(x for x in essay_content_items if x.uid==ref)
+                    data.append({
+                        "reason": "[%s]" % reason.label,
+                        "paragraph": essay_item.label,
+                        "rtype": "PrimArg",
+                    })
+        else:
+            data.append({
+                "reason": "[%s]" % reason.label,
+                "paragraph": "None",
+                "rtype": "PrimArg",
+            })
+    for objection in objections:
+        if objection.essay_text_refs:
+            for ref in objection.essay_text_refs:
+                if ref in essay_content_uids:
+                    essay_item = next(x for x in essay_content_items if x.uid==ref)
+                    data.append({
+                        "reason": "[%s]" % objection.label,
+                        "paragraph": essay_item.label,
+                        "rtype": "Object.",
+                    })
+        else:
+            data.append({
+                "reason": "[%s]" % objection.label,
+                "paragraph": "None",
+                "rtype": "Object.",
+            })
+    for rebuttal in rebuttals:
+        if rebuttal.essay_text_refs:
+            for ref in rebuttal.essay_text_refs:
+                if ref in essay_content_uids:
+                    essay_item = next(x for x in essay_content_items if x.uid==ref)
+                    data.append({
+                        "reason": "[%s]" % rebuttal.label,
+                        "paragraph": essay_item.label,
+                        "rtype": "Rebut.",
+                    })
+        else:
+            data.append({
+                "reason": "[%s]" % rebuttal.label,
+                "paragraph": "None",
+                "rtype": "Rebut.",
+            })
+    for essay_item in essay_content_items:
+        if not any(
+            essay_item.uid in r.essay_text_refs 
+            for r in reasons+objections+rebuttals
+        ):
+            data.append({
+                "reason": "None",
+                "paragraph": essay_item.label,
+                "rtype": "None",
+            })
+                
+    df = pd.DataFrame(data)
+    
+
+    # Create dimensions
+    paragraph_dim = go.parcats.Dimension(
+        values=df.paragraph,
+        categoryorder='category ascending', label="Paragraph"
+    )
+
+    reason_dim = go.parcats.Dimension(
+        values=df.reason, label="Reason",
+    )
+
+    rtype_order = ["PrimArg","Object.","Rebut.","None"]
+    rtype_order = [t for t in rtype_order if t in df.rtype]
+    rtype_dim = go.parcats.Dimension(
+        values=df.rtype, label="Type", 
+        categoryorder="array",
+        categoryarray=rtype_order,
+    )
+
+    # Create parcats trace
+    colormap = dict([("PrimArg", 'green'), ("Object.", 'red'), ("Rebut.", "blueviolet"), ("None", "gray")])
+    color = df.rtype.apply(lambda rtype: colormap.get(rtype))
+
+    fig_data = [go.Parcats(dimensions=[paragraph_dim, reason_dim, rtype_dim],
+        line={'color': color},
+        hoveron='dimension', hoverinfo='count',
+        arrangement='freeform'
+        )
+    ]
+
+    st.plotly_chart(fig_data, use_container_width=True)
+
+    # Debug:
+    #st.experimental_show(essay_content_uids)
+    #st.table(df)
+

@@ -20,6 +20,7 @@ class EssayContentItem(BaseContentItem):
     name: str
     html: str
     heading_level: int = 0
+    label: str = ""
 
 
 @dataclasses.dataclass

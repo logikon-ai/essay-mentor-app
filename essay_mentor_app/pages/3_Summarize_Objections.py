@@ -25,9 +25,9 @@ aea: ArgumentativeEssayAnalysis = st.session_state.aea
 
 ## status bar 
 
-st.sidebar.header("Objections")
-progress_bar = st.sidebar.progress(0)
-status_text = st.sidebar.empty()
+#st.sidebar.header("Objections")
+#progress_bar = st.sidebar.progress(0)
+#status_text = st.sidebar.empty()
 
 
 
@@ -46,7 +46,7 @@ if not aea.reasons:
 
 if aea.objections:
     st.write("#### Your objections:")
-    display_reasons(aea.objections, aea.reasons, parent_name="primary argument")
+    display_reasons(aea.objections, aea.reasons, parent_name="primary argument", reason_name="objection")
 
     if st.button("Revise objections"):
         clear_associated_keys(aea.rebuttals)
