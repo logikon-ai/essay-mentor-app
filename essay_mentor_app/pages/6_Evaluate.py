@@ -1,6 +1,8 @@
 # page 6
 
 import streamlit as st
+from streamlit_extras.switch_page_button import switch_page
+
 st.session_state.update(st.session_state)
 
 from essay_mentor_app.backend.aea_datamodel import (
@@ -10,6 +12,13 @@ from essay_mentor_app.backend.components import (
     display_reasons_hierarchy,
     display_essay_annotation_figure,
 )
+
+st.set_page_config(
+    page_title="Tessy - Essay Tutor",
+    page_icon="👩‍🏫",
+)
+if not "aea" in st.session_state:
+    switch_page("Start")
 
 aea:ArgumentativeEssayAnalysis = st.session_state.aea
 

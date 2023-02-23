@@ -18,7 +18,12 @@ from essay_mentor_app.backend.components import (
 
 st.session_state.update(st.session_state)
 
-st.set_page_config(page_title="Main Question And Claims", page_icon="?!")
+st.set_page_config(
+    page_title="Tessy - Essay Tutor",
+    page_icon="👩‍🏫",
+)
+if not "aea" in st.session_state:
+    switch_page("Start")
 aea: ArgumentativeEssayAnalysis = st.session_state.aea
 
 

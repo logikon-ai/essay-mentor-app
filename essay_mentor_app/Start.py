@@ -1,10 +1,11 @@
+from io import StringIO
 import logging
 
+import markdown
+import markdownify
 import plotly.graph_objects as go
 import pandas as pd
-
-
-import markdown
+from PyPDF2 import PdfReader
 import streamlit as st
 from streamlit_extras.switch_page_button import switch_page
 
@@ -13,7 +14,7 @@ from backend.components import display_essay, parse_essay_content
 import backend.examples
 
 st.set_page_config(
-    page_title="Welcome",
+    page_title="Tessy - Essay Tutor",
     page_icon="👩‍🏫",
 )
 
@@ -26,26 +27,15 @@ def main():
 
 
 
-
-
-
-
     if not "aea" in st.session_state:
         st.session_state["aea"] = ArgumentativeEssayAnalysis()
+    aea:ArgumentativeEssayAnalysis = st.session_state.aea
 
-    if st.session_state.aea.essay_content_items:
+    if aea.essay_content_items:
         st.write("(Reload this page to start over with another text.)")
         st.write("------")
         st.write("*The essay that's currently being processed*:")
-        display_essay(
-            st.session_state.aea.essay_content_items,
-            # reasons=[
-            #     Reason("text","lab1","parentuid"),
-            #     Reason("text","lab2","parentuid"),
-            #     Reason("text","lab3","parentuid"),
-            #     Reason("text","lab4","parentuid"),
-            # ]
-        )
+        display_essay(st.session_state.aea.essay_content_items)
         st.stop()
 
     if "essay_raw" not in st.session_state or st.session_state.essay_raw is None: 
@@ -56,6 +46,22 @@ def main():
     with col1:
         # file uploader
         uploaded_file = st.file_uploader("You can upload your essay ...", type=["txt", "md", "pdf"])
+        if uploaded_file is not None:
+            essay_raw:str = ""
+            if uploaded_file.name.endswith(".pdf"):
+                reader = PdfReader(uploaded_file)
+                for page in reader.pages:
+                    essay_raw += (page.extract_text())
+                    essay_raw += "\n\n"
+            elif uploaded_file.name.endswith(".txt") or uploaded_file.name.endswith(".md"):
+                stringio = StringIO(uploaded_file.getvalue().decode("utf-8"))
+                tmp_text = stringio.read()
+                # remove html tags:
+                tmp_text = markdown.markdown(tmp_text)
+                tmp_text = markdownify.markdownify(tmp_text)
+                essay_raw = tmp_text
+            st.session_state["essay_raw"] = essay_raw
+
     with col2:
         # select example essay
         def paste_example_essay():
@@ -73,17 +79,28 @@ def main():
 
     essay_raw = st.text_area(
         "... or directly paste your text here:",
-        height=320,
+        height=280,
         key="essay_raw",
+        help=(
+            "Please use basic [markdown formatting](https://www.markdownguide.org/basic-syntax/), in particular:\n "
+            " * '#', '##', '###' for headings\n"
+            " * paragraphs are separated by an empty line\n"
+        )
     )
 
     if not essay_raw:
-        st.warning("No essay text provided yet.")
+        # info with lightbulb icon
+        st.info(
+            "TIP: Instead of uploading a file, consider converting "
+            "it with https://pandoc.org/try/ to markdown and paste "
+            "the resulting text.",
+            icon="💡"
+        )
         placeholder = st.empty()
     else:
         essay_html = markdown.markdown(essay_raw)
         st.success(
-            "Your essay is ready to be analysed."
+            "Your essay is ready to be analysed. (Preview essay structure below.)"
         )
         placeholder = st.empty()
         st.write("------")
@@ -93,7 +110,6 @@ def main():
 
     with placeholder:
         if st.button("Use this text and proceed with next step", disabled=not(essay_raw)):
-            aea: ArgumentativeEssayAnalysis = st.session_state.aea
             aea.essaytext_md = essay_raw
             essay_html = markdown.markdown(essay_raw)
             aea.essaytext_html = essay_html
