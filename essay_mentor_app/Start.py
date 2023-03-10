@@ -22,9 +22,8 @@ def main():
 
     st.session_state.update(st.session_state)
 
-    st.title('TESSY – Essay Tutor')
+    st.title('TESSY - Essay Tutor')
     st.write('**The AI Co-Tutor that supports you in writing better essays, and your teacher in grading them.**')
-
 
 
     if not "aea" in st.session_state:

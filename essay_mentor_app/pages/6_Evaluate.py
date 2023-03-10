@@ -26,7 +26,7 @@ aea:ArgumentativeEssayAnalysis = st.session_state.aea
 
 if not aea.reasons or not any(r.essay_text_refs for r in aea.reasons+aea.objections+aea.rebuttals):
     st.write(
-        "In order to annotate the essay, "
+        "In order to evaluate the essay, "
         "you need to detail your primary arguments "
         "(and possibly further objections and rebuttals) "
         "and connect them to your essay text first. "
@@ -59,3 +59,13 @@ display_essay_annotation_figure(
     rebuttals=aea.rebuttals,
 )
 
+if st.button("Evaluate"):
+
+
+    st.markdown("""
+    |     | erroneous | implausible | arbitrary | plausible  | compelling |
+    |-----|:----:|:----:|:----:|:----:|:----:|
+    | The way individual arguments are related to each other (pro/con):   |   |   | 😐 |   |   |
+    | The way individual arguments are linked to the essay:   |   |   |   | 😊 |   |
+    """)
+    # | 😩 | 😟 | 😐 | 😊 | 😄 |
