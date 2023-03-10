@@ -62,10 +62,22 @@ display_essay_annotation_figure(
 if st.button("Evaluate"):
 
 
-    st.markdown("""
-    |     | erroneous | implausible | arbitrary | plausible  | compelling |
-    |-----|:----:|:----:|:----:|:----:|:----:|
-    | The way individual arguments are related to each other (pro/con):   |   |   | 😐 |   |   |
-    | The way individual arguments are linked to the essay:   |   |   |   | 😊 |   |
-    """)
+    st.markdown(
+        "<table>"
+        "<tr>"
+        "<td width=30%></td>"
+        "<td align=center width=14%><i>erroneous</i></td>"
+        "<td align=center width=14%><i>implausible</i></td>"
+        "<td align=center width=14%><i>arbitrary</i></td>"
+        "<td align=center width=14%><i>plausible</i></td>"
+        "<td align=center width=14%><i>compelling</i></td>"
+        "</tr>"
+        "<tr>"
+        "<td>The way individual arguments are related to each other (pro/con):</td><td></td><td></td><td align=center><h3>😐</h3></td><td></td><td></td>"
+        "</tr>"
+        "<tr>"
+        "<td>The way individual arguments are linked to the essay:</td><td></td><td></td><td></td><td align=center><h3>😊</h3></td><td></td>"
+        "</tr>"
+        "</table>", unsafe_allow_html=True
+    )
     # | 😩 | 😟 | 😐 | 😊 | 😄 |
