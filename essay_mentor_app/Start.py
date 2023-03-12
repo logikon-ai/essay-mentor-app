@@ -30,6 +30,9 @@ def main():
         st.session_state["aea"] = ArgumentativeEssayAnalysis()
     aea:ArgumentativeEssayAnalysis = st.session_state.aea
 
+    if not "has_been_submitted" in st.session_state:
+        st.session_state["has_been_submitted"] = False        
+
     if aea.essay_content_items:
         st.write("(Reload this page to start over with another text.)")
         st.write("------")

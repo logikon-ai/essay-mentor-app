@@ -8,10 +8,11 @@ st.session_state.update(st.session_state)
 from essay_mentor_app.backend.aea_datamodel import (
     ArgumentativeEssayAnalysis,
 )
-from essay_mentor_app.backend.components import (
-    display_reasons_hierarchy,
-    display_essay_annotation_figure,
-)
+import essay_mentor_app.backend.components as components
+#from essay_mentor_app.backend.components import (
+#    display_reasons_hierarchy,
+#    display_essay_annotation_figure,
+#)
 
 st.set_page_config(
     page_title="Tessy - Essay Tutor",
@@ -43,7 +44,7 @@ st.info(
 
 st.markdown("### Reason hierarchy")
 st.caption("Arguments, objections, rebuttals as summarized before.")
-display_reasons_hierarchy(
+components.display_reasons_hierarchy(
     claims=aea.main_claims,
     reasons=aea.reasons,
     objections=aea.objections,
@@ -52,32 +53,33 @@ display_reasons_hierarchy(
 
 st.markdown("### Annotation visualization")
 st.caption("Mapping of paragraphs in the essay (left column) to reasons (middle and right column).")
-display_essay_annotation_figure(
+components.display_essay_annotation_figure(
+    aea.essay_content_items,
+    reasons=aea.reasons,
+    objections=aea.objections,
+    rebuttals=aea.rebuttals,
+)
+components.display_essay_annotation_metrics(
     aea.essay_content_items,
     reasons=aea.reasons,
     objections=aea.objections,
     rebuttals=aea.rebuttals,
 )
 
-if st.button("Evaluate"):
 
+submit = st.button("Submit for evaluation", disabled=st.session_state.has_been_submitted)
 
+if submit or st.session_state.has_been_submitted:
+    st.session_state["has_been_submitted"] = True
+
+    st.markdown("## Evaluation")
+    st.markdown("### Global score")
     st.markdown(
-        "<table>"
-        "<tr>"
-        "<td width=30%></td>"
-        "<td align=center width=14%><i>erroneous</i></td>"
-        "<td align=center width=14%><i>implausible</i></td>"
-        "<td align=center width=14%><i>arbitrary</i></td>"
-        "<td align=center width=14%><i>plausible</i></td>"
-        "<td align=center width=14%><i>compelling</i></td>"
-        "</tr>"
-        "<tr>"
-        "<td>The way individual arguments are related to each other (pro/con):</td><td></td><td></td><td align=center><h3>😐</h3></td><td></td><td></td>"
-        "</tr>"
-        "<tr>"
-        "<td>The way individual arguments are linked to the essay:</td><td></td><td></td><td></td><td align=center><h3>😊</h3></td><td></td>"
-        "</tr>"
-        "</table>", unsafe_allow_html=True
+        components.eval_scores_table({
+            "Pro/con relations between arguments": 2,
+            "Links of individual arguments to the essay": 3,
+        }),
+        unsafe_allow_html=True
     )
-    # | 😩 | 😟 | 😐 | 😊 | 😄 |
+    st.markdown("### Detailed scores per argument")
+    components.dummy_show_detailed_scores(aea)

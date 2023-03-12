@@ -4,7 +4,9 @@ from typing import List, Tuple, Union, Optional, Dict
 
 from bs4 import BeautifulSoup
 import plotly.graph_objects as go
+import numpy as np
 import pandas as pd
+import random
 import streamlit as st
 from streamlit_extras.switch_page_button import switch_page
 import uuid
@@ -214,6 +216,50 @@ def input_reasons(
 
     return reasons, button_skip
 
+
+def display_essay_annotation_metrics(
+    essay: List[EssayContentItem],
+    reasons: List[Reason] = None,
+    objections: List[Reason] = None,
+    rebuttals: List[Reason] = None,
+):
+    # list of all arguments
+    arguments: List[Reason] = reasons or []
+    if objections:
+        arguments += objections
+    if rebuttals:
+        arguments += rebuttals
+
+    # list of all paragraph uids
+    essay_content_items = [
+        element for element in essay
+        if element.name not in ['h1','h2','h3','h4']
+    ]
+    essay_content_uids = [element.uid for element in essay_content_items]
+
+    # metrics
+    essay_content_covered = [
+        uid for uid in essay_content_uids
+        if any([arg for arg in arguments if uid in arg.essay_text_refs])
+    ]
+    essay_content_covered_ratio = len(essay_content_covered)/len(essay_content_uids)
+
+    arguments_assigned = [
+        arg for arg in arguments
+        if arg.essay_text_refs
+    ]
+    arguments_assigned_ratio = len(arguments_assigned)/len(arguments)
+
+    average_paragraphs_per_argument = np.mean([
+        len(arg.essay_text_refs) for arg in arguments_assigned
+    ])
+
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Essay content covered", f"{essay_content_covered_ratio*100:.0f} %")
+    col2.metric("Arguments assigned", f"{arguments_assigned_ratio*100:.0f} %")
+    col3.metric("Average paragraphs per argument", f"{average_paragraphs_per_argument:.2f}")
+
+
 def display_essay_annotation_figure(
     essay: List[EssayContentItem],
     reasons: List[Reason] = None,
@@ -324,3 +370,79 @@ def display_essay_annotation_figure(
     #st.experimental_show(essay_content_uids)
     #st.table(df)
 
+
+def eval_scores_table(data: Dict[str,int]) -> str:
+    """Return a html table with the evaluation scores."""
+
+    def emoji(score: int) -> str:
+        if score == 0:
+            return "😩"
+        elif score == 1:
+            return "😟"
+        elif score == 2:
+            return "😐"
+        elif score == 3:
+            return "😊"
+        elif score == 4:
+            return "😄"
+
+    data_rows = ""
+    for key, value in data.items():
+        row = f"<tr><td>{key}:</td>"
+        for i in range(5):
+            if i == value:
+                row += f"<td align=center><h3>{emoji(i)}</h3></td>"
+            else:
+                row += "<td></td>"
+        row += "</tr>"
+        data_rows += row
+
+    table_header = (
+        "<table>"
+        "<tr>"
+        "<td width=30%></td>"
+        "<td align=center width=14%><i>erroneous</i></td>"
+        "<td align=center width=14%><i>implausible</i></td>"
+        "<td align=center width=14%><i>arbitrary</i></td>"
+        "<td align=center width=14%><i>plausible</i></td>"
+        "<td align=center width=14%><i>compelling</i></td>"
+        "</tr>"
+    )
+    table_footer = "</table><br/>"
+    
+    return table_header + data_rows + table_footer
+
+
+def dummy_show_detailed_scores(aea):
+    # list of all arguments
+    arguments: List[Reason] = aea.reasons or []
+    if aea.objections:
+        arguments += aea.objections
+    if aea.rebuttals:
+        arguments += aea.rebuttals
+
+    for argument in arguments:
+        st.write(f"##### [{argument.label}]: {argument.text}")
+        st.write(f"Linked to paragraphs: ¶003, ¶005")
+        dummy_scores = {
+            f"Argumentative relation of [{argument.label}] to other arguments":random.randint(0,4),
+            f"Link of [{argument.label}] to paragraphs in the essay":random.randint(0,4),
+        }
+        st.markdown(
+            eval_scores_table(dummy_scores),
+            unsafe_allow_html=True
+        )
+        explanation = st.expander("Explanation of the scores", expanded=False)
+        with explanation:
+            summary = f"It is <b>very likely</b> that {argument.label} is related to arguments in different ways than specified by the author (i.e., not as pro reason for [xxx]):"
+            details = f"<ul><li>Pro reason for [Obj2] (23%)</li><li>Con reason against [Claim1] (12%)</li><li>Pro reason for [Rbt3] (11%)</li></ul>"
+            st.markdown(
+                f"<p>{summary}</p><p>{details}</p>",
+                unsafe_allow_html=True
+            )
+            summary = f"It is <b>unlikely</b> that {argument.label} is related to the essay in different ways than specified by the author, namely:"
+            details = f"<ul><li>Discussed in ¶002 (15%)</li><li>Not discussed in ¶003 (12%)</li><li>Discussed in ¶001 (4%)</li></ul>"
+            st.markdown(
+                f"<p>{summary}</p><p>{details}</p>",
+                unsafe_allow_html=True
+            )
