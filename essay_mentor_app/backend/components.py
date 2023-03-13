@@ -368,25 +368,25 @@ def eval_scores_table(data: Dict[str,int]) -> str:
 
     data_rows = ""
     for key, value in data.items():
-        row = f"<tr><td>{key}:</td>"
+        row = f"<tr><td width=65%>{key}</td>"
         for i in range(5):
             if i == value:
-                row += f"<td align=center><h4>{emoji(i)}</h4></td>"
+                row += f"<td margin=0 padding=0 align=center width=7%>{emoji(i)}</td>"
             else:
-                row += "<td></td>"
+                row += "<td align=center width=7%></td>"
         row += "</tr>"
         data_rows += row
 
     table_header = (
-        "<table>"
-        "<tr>"
-        "<td width=30%></td>"
-        "<td align=center width=14%><i>erroneous</i></td>"
-        "<td align=center width=14%><i>implausible</i></td>"
-        "<td align=center width=14%><i>arbitrary</i></td>"
-        "<td align=center width=14%><i>plausible</i></td>"
-        "<td align=center width=14%><i>compelling</i></td>"
-        "</tr>"
+        "<table width=100%>"
+        #"<tr>"
+        #"<td width=30%></td>"
+        #"<td align=center width=14%><i>erroneous</i></td>"
+        #"<td align=center width=14%><i>implausible</i></td>"
+        #"<td align=center width=14%><i>arbitrary</i></td>"
+        #"<td align=center width=14%><i>plausible</i></td>"
+        #"<td align=center width=14%><i>compelling</i></td>"
+        #"</tr>"
     )
     table_footer = "</table><br/>"
     
@@ -403,9 +403,9 @@ def dummy_show_detailed_scores(aea):
 
     for argument in arguments:
         st.write(f"##### [{argument.label}]: {argument.text}")
-        st.write(f"Linked to paragraphs: ¶003, ¶005")
+        st.caption(f"Linked to paragraphs: ¶003, ¶005")
         dummy_scores = {
-            f"Argumentative relation of [{argument.label}] to other arguments":random.randint(0,4),
+            f"Argumentative relation of [{argument.label}] to further arguments":random.randint(0,4),
             f"Link of [{argument.label}] to paragraphs in the essay":random.randint(0,4),
         }
         st.markdown(
@@ -414,13 +414,13 @@ def dummy_show_detailed_scores(aea):
         )
         explanation = st.expander("More details and explanation...", expanded=False)
         with explanation:
-            summary = f"It is <b>very likely</b> that {argument.label} is related to further arguments differently than specified by the author (i.e., not as pro reason for [xxx]). Most plausible alternatives:"
+            summary = f"It is <b>very likely</b> that [{argument.label}] is related to further arguments in another way than specified by the author (i.e., not as pro reason for [xxx]). Most plausible alternatives:"
             details = f"<ul><li>Pro reason for [Obj2] (23%)</li><li>Con reason against [Claim1] (12%)</li><li>Pro reason for [Rbt3] (11%)</li></ul>"
             st.markdown(
                 f"<p>{summary}</p><p>{details}</p>",
                 unsafe_allow_html=True
             )
-            summary = f"It is <b>unlikely</b> that {argument.label} appears in the essay at different places than specified by the author. Most plausible alternatives:"
+            summary = f"It is <b>unlikely</b> that [{argument.label}] appears in the essay at different places than specified by the author. Most plausible alternatives:"
             details = f"<ul><li>Discussed in ¶002 (15%)</li><li>Not discussed in ¶003 (12%)</li><li>Discussed in ¶001 (4%)</li></ul>"
             st.markdown(
                 f"<p>{summary}</p><p>{details}</p>",

@@ -78,11 +78,12 @@ if st.session_state.has_been_submitted:
             st.session_state["evaluation_result"] = {"some": "result"}
 
     st.markdown("## Evaluation")
+    st.caption("😩 erroneous, 😟 implausible, 😐 arbitrary, 😊 plausible, 😄 compelling")
     st.markdown("### Overall score")
     st.markdown(
         components.eval_scores_table({
-            "Argumentative analysis (pros/cons hierarchy)": 2,
-            "Linkage of individual arguments to the essay": 3,
+            "Argumentative analysis (reason hierarchy)": 2,
+            "Linkage of arguments to text (essay annotation)": 3,
         }),
         unsafe_allow_html=True
     )
