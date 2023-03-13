@@ -10,13 +10,13 @@ import streamlit as st
 from streamlit_extras.switch_page_button import switch_page
 
 from backend.aea_datamodel import ArgumentativeEssayAnalysis
-from backend.components import display_essay, parse_essay_content
+import backend.components as components
 import backend.examples
+import backend.utils
 
-st.set_page_config(
-    page_title="Tessy - Essay Tutor",
-    page_icon="👩‍🏫",
-)
+# init
+backend.utils.page_init(is_startpage=True)
+
 
 def main():
 
@@ -37,7 +37,7 @@ def main():
         st.write("(Reload this page to start over with another text.)")
         st.write("------")
         st.write("*The essay that's currently being processed*:")
-        display_essay(st.session_state.aea.essay_content_items)
+        components.display_essay(st.session_state.aea.essay_content_items)
         st.stop()
 
     if "essay_raw" not in st.session_state or st.session_state.essay_raw is None: 
@@ -67,13 +67,17 @@ def main():
     with col2:
         # select example essay
         def paste_example_essay():
-            if st.session_state.example_essay_id == "Example 1":
-                st.session_state["essay_raw"] = backend.examples.GUARDIAN1
+            if st.session_state.example_essay_id == "Example 1 (Racism)":
+                st.session_state["essay_raw"] = backend.examples.EX1_RACISM_PAPERSOWL
+            elif st.session_state.example_essay_id == "Example 2 (Veganism)":
+                st.session_state["essay_raw"] = backend.examples.EX2_VEGANISM_PAPERSOWL
+            elif st.session_state.example_essay_id == "Example 3 (Critical Thinking)":
+                st.session_state["essay_raw"] = backend.examples.EX3_CRITTHINK
             else:
                 st.session_state["essay_raw"] = st.session_state.example_essay_id
         st.selectbox(
             "... or select an example ...",
-            ["", "Example 1", "Example 2"],
+            ["", "Example 1 (Racism)", "Example 2 (Veganism)", "Example 3 (Critical Thinking)"],
             on_change=paste_example_essay,
             key="example_essay_id",
         )
@@ -107,7 +111,7 @@ def main():
         placeholder = st.empty()
         st.write("------")
         with st.expander("Preview essay structure (click to expand)"):
-            display_essay(essay_html)
+            components.display_essay(essay_html)
             st.write(" ")
 
     with placeholder:
@@ -115,7 +119,7 @@ def main():
             aea.essaytext_md = essay_raw
             essay_html = markdown.markdown(essay_raw)
             aea.essaytext_html = essay_html
-            aea.essay_content_items = parse_essay_content(essay_html)
+            aea.essay_content_items = backend.utils.parse_essay_content(essay_html)
             switch_page("Describe Main Question And Claims")
 
 

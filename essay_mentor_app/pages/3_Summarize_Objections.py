@@ -4,41 +4,21 @@ from typing import List
 
 import streamlit as st
 from streamlit_extras.switch_page_button import switch_page
-import uuid
 
-from essay_mentor_app.backend.aea_datamodel import (
-    ArgumentativeEssayAnalysis,
-    Reason,
-)
+from backend.aea_datamodel import ArgumentativeEssayAnalysis
+import backend.components as components
+import backend.utils
 
-from essay_mentor_app.backend.components import (
-    display_reasons,
-    input_reasons,
-    clear_associated_keys,
-)
 
-st.session_state.update(st.session_state)
+# init
 
-st.set_page_config(
-    page_title="Tessy - Essay Tutor",
-    page_icon="👩‍🏫",
-)
-if not "aea" in st.session_state:
-    switch_page("Start")
+backend.utils.page_init()
 aea: ArgumentativeEssayAnalysis = st.session_state.aea
-
-
-## status bar 
-
-#st.sidebar.header("Objections")
-#progress_bar = st.sidebar.progress(0)
-#status_text = st.sidebar.empty()
-
-
 
 
 # main page
 
+components.display_submit_notice(st.session_state.has_been_submitted)
 
 if not aea.reasons:
     st.write(
@@ -51,12 +31,12 @@ if not aea.reasons:
 
 if aea.objections:
     st.write("#### Your objections:")
-    display_reasons(aea.objections, aea.reasons, parent_name="primary argument", reason_name="objection")
+    components.display_reasons(aea.objections, aea.reasons, parent_name="primary argument", reason_name="objection")
 
-    if st.button("Revise objections"):
-        clear_associated_keys(aea.rebuttals)
+    if st.button("Revise objections", disabled=st.session_state.has_been_submitted):
+        backend.utils.clear_associated_keys(aea.rebuttals)
         aea.rebuttals = []
-        clear_associated_keys(aea.objections)
+        backend.utils.clear_associated_keys(aea.objections)
         aea.objections = []
         st.experimental_rerun()
     if aea.rebuttals:
@@ -65,17 +45,19 @@ if aea.objections:
     if aea.objections:
         st.stop()
 
-st.info(
-    "Which objections to each primary argument do you discuss (if any)?",
-    icon="❔"
-)
+if not st.session_state.has_been_submitted:
+    st.info(
+        "Which objections to each primary argument do you discuss (if any)?",
+        icon="❔"
+    )
 
-objections, skip = input_reasons(
+objections, skip = components.input_reasons(
     parent_list=aea.reasons,
     parent_name="primary argument",
     reason_name="objection",
     expanded_per_default=False,
     with_skip_button=True,
+    has_been_submitted=st.session_state.has_been_submitted,
 )
 
 if skip:

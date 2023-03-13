@@ -12,13 +12,13 @@ from streamlit_extras.switch_page_button import switch_page
 import uuid
 
 from essay_mentor_app.backend.aea_datamodel import (
-    ArgumentativeEssayAnalysis,
     EssayContentItem,
     BaseContentItem,
     MapContentItem,
     MainClaim,
     Reason,
 )
+import backend.utils
 
 LABELS = {
     "primary argument": "PrA",
@@ -26,51 +26,23 @@ LABELS = {
     "rebuttal": "Rbt",
 }
 
-def clear_associated_keys(content_elements: List[BaseContentItem]):
-    for element in content_elements:
-        st.session_state.pop(f"reasons_txt_{element.uid}", None)
-        if isinstance(element, Reason):
-            # remove element label from all multi select widget lists
-            for essay_element in st.session_state.aea.essay_content_items:
-                multi_select_list = st.session_state.get(f"multiselect_assreas_{essay_element.uid}", [])
-                if element.label in multi_select_list:
-                    multi_select_list.remove(element.label)
-        if isinstance(element, EssayContentItem):
-            st.session_state.pop(f"multiselect_assreas_{element.uid}", None)
-
-
-
-def parse_essay_content(essay_html) -> List[EssayContentItem]:
-    soup = BeautifulSoup(essay_html, 'html.parser')
-    content_items = []
-    counter = 0
-    for element in soup.find_all(['h1','h2','h3','h4','p','ul','ol']):
-        html=str(element)
-        level = 0
-        if element.name in ['h1','h2','h3','h4']:
-            level = ['h1','h2','h3','h4'].index(element.name) + 1
-        else:
-            counter += 1
-        content_items.append(
-            EssayContentItem(
-                name=element.name,
-                text=element.text,
-                html=html,
-                heading_level=level,
-                label=f"{counter:03d}" if level==0 else "",
-            )
+def display_submit_notice(has_been_submitted: bool = False):
+    if has_been_submitted:
+        st.info(
+            "Your essay has been submitted and evaluated. Results are shown on "
+            "page 'Evaluate'. To start over, reload this page.",
+            icon="💡"
         )
-    return content_items
-
 
 def display_essay(
     essay: Union[str, List[EssayContentItem]],
     reasons: List[Reason] = None,
     objections: List[Reason] = None,
     rebuttals: List[Reason] = None,
+    has_been_submitted: bool = False,
 ) -> Optional[Dict[str, List[str]]]:
     if isinstance(essay, str):
-        essay_content = parse_essay_content(essay)
+        essay_content = backend.utils.parse_essay_content(essay)
     else:
         essay_content = essay
 
@@ -93,13 +65,14 @@ def display_essay(
                     "Reasons discussed in paragraph quoted above (if any):",
                     options=list(reason_labels.keys()),
                     key=f"multiselect_assreas_{element.uid}",
+                    disabled=has_been_submitted,
                 )
                 st.write("\n")
 
             icon = "¶" if element.name=='p' else "⋮"
             summary = f"{icon} {element.label}  {element.text[:32]}..."
             paragraph_placeholder.write(
-                f"<details><summary>{summary}</summary>{element.text}</details>",
+                f"<p><details><summary>{summary}</summary>{element.text}</details></p>",
                 unsafe_allow_html=True
             )
 
@@ -156,6 +129,7 @@ def input_reasons(
     reason_name: str = "argument",
     expanded_per_default = True,
     with_skip_button = False,
+    has_been_submitted = False,
 ) -> Tuple[List[Reason],bool]:
     
     reasons_text_areas = []
@@ -173,6 +147,7 @@ def input_reasons(
                     #value=initial_text,
                     height=120,
                     key=key,
+                    disabled=has_been_submitted,
                 )
             )
 
@@ -193,9 +168,9 @@ def input_reasons(
 
     button_proceed = st.button(
         str(f"Proceed with these {reason_name}s"),
-        disabled=not any(reasons_txt for reasons_txt in reasons_text_areas)
+        disabled=not any(reasons_txt for reasons_txt in reasons_text_areas) or has_been_submitted
     )
-    button_skip = st.button("Skip this input step.") if with_skip_button else False
+    button_skip = st.button("Skip this input step.", disabled=has_been_submitted) if with_skip_button else False
 
 
     if button_proceed:
@@ -257,7 +232,7 @@ def display_essay_annotation_metrics(
     col1, col2, col3 = st.columns(3)
     col1.metric("Essay content covered", f"{essay_content_covered_ratio*100:.0f} %")
     col2.metric("Arguments assigned", f"{arguments_assigned_ratio*100:.0f} %")
-    col3.metric("Average paragraphs per argument", f"{average_paragraphs_per_argument:.2f}")
+    col3.metric("Paragraphs per ass. argument", f"{average_paragraphs_per_argument:.2f}")
 
 
 def display_essay_annotation_figure(
@@ -348,7 +323,7 @@ def display_essay_annotation_figure(
     rtype_order = ["PrimArg","Object.","Rebut.","None"]
     rtype_order = [t for t in rtype_order if t in df.rtype]
     rtype_dim = go.parcats.Dimension(
-        values=df.rtype, label="Type", 
+        values=df.rtype, label="Argument Type", 
         categoryorder="array",
         categoryarray=rtype_order,
     )
@@ -359,12 +334,17 @@ def display_essay_annotation_figure(
 
     fig_data = [go.Parcats(dimensions=[paragraph_dim, reason_dim, rtype_dim],
         line={'color': color},
-        hoveron='dimension', hoverinfo='count',
-        arrangement='freeform'
+        hoveron='dimension', hoverinfo='count'#,
+        #labelfont={'size': 12, 'family': 'Sans-Serif'},
+        #tickfont={'size': 12, 'family': 'Sans-Serif'}#,
+        #arrangement='freeform'
         )
     ]
 
-    st.plotly_chart(fig_data, use_container_width=True)
+    st.plotly_chart(
+        fig_data,
+        use_container_width=False
+    )
 
     # Debug:
     #st.experimental_show(essay_content_uids)
@@ -391,7 +371,7 @@ def eval_scores_table(data: Dict[str,int]) -> str:
         row = f"<tr><td>{key}:</td>"
         for i in range(5):
             if i == value:
-                row += f"<td align=center><h3>{emoji(i)}</h3></td>"
+                row += f"<td align=center><h4>{emoji(i)}</h4></td>"
             else:
                 row += "<td></td>"
         row += "</tr>"
@@ -432,15 +412,15 @@ def dummy_show_detailed_scores(aea):
             eval_scores_table(dummy_scores),
             unsafe_allow_html=True
         )
-        explanation = st.expander("Explanation of the scores", expanded=False)
+        explanation = st.expander("More details and explanation...", expanded=False)
         with explanation:
-            summary = f"It is <b>very likely</b> that {argument.label} is related to arguments in different ways than specified by the author (i.e., not as pro reason for [xxx]):"
+            summary = f"It is <b>very likely</b> that {argument.label} is related to further arguments differently than specified by the author (i.e., not as pro reason for [xxx]). Most plausible alternatives:"
             details = f"<ul><li>Pro reason for [Obj2] (23%)</li><li>Con reason against [Claim1] (12%)</li><li>Pro reason for [Rbt3] (11%)</li></ul>"
             st.markdown(
                 f"<p>{summary}</p><p>{details}</p>",
                 unsafe_allow_html=True
             )
-            summary = f"It is <b>unlikely</b> that {argument.label} is related to the essay in different ways than specified by the author, namely:"
+            summary = f"It is <b>unlikely</b> that {argument.label} appears in the essay at different places than specified by the author. Most plausible alternatives:"
             details = f"<ul><li>Discussed in ¶002 (15%)</li><li>Not discussed in ¶003 (12%)</li><li>Discussed in ¶001 (4%)</li></ul>"
             st.markdown(
                 f"<p>{summary}</p><p>{details}</p>",

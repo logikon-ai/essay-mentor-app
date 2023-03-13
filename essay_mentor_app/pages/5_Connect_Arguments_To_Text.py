@@ -2,27 +2,21 @@
 
 import streamlit as st
 from streamlit_extras.switch_page_button import switch_page
-st.session_state.update(st.session_state)
 
-from essay_mentor_app.backend.aea_datamodel import (
-    ArgumentativeEssayAnalysis,
-)
-from essay_mentor_app.backend.components import (
-    display_essay,
-    display_reasons_hierarchy,
-)
+from essay_mentor_app.backend.aea_datamodel import ArgumentativeEssayAnalysis
+import essay_mentor_app.backend.components as components
+import backend.utils
 
-st.session_state.update(st.session_state)
 
-st.set_page_config(
-    page_title="Tessy - Essay Tutor",
-    page_icon="👩‍🏫",
-)
-if not "aea" in st.session_state:
-    switch_page("Start")
+# init
+
+backend.utils.page_init()
 aea:ArgumentativeEssayAnalysis = st.session_state.aea
 
 
+# main
+
+components.display_submit_notice(st.session_state.has_been_submitted)
 
 if not aea.reasons:
     st.write(
@@ -33,16 +27,17 @@ if not aea.reasons:
     )
     st.stop()
 
-st.info(
-    "Where, in your essay, do you present the arguments summarized so far?",
-    icon="❔"
-)
+if not st.session_state.has_been_submitted:
+    st.info(
+        "Where, in your essay, do you present the arguments summarized so far?",
+        icon="❔"
+    )
 
 with st.expander(
     "Reason hierarchy (arguments, objections, rebuttals) as summarized before",
     expanded=True,
 ):
-    display_reasons_hierarchy(
+    components.display_reasons_hierarchy(
         claims=aea.main_claims,
         reasons=aea.reasons,
         objections=aea.objections,
@@ -52,15 +47,19 @@ with st.expander(
 st.write("------")
 st.write("Select reasons that are discussed in each corresponding paragraph:")
 
-reason_assignments = display_essay(
+reason_assignments = components.display_essay(
     aea.essay_content_items,
     reasons=aea.reasons,
     objections=aea.objections,
     rebuttals=aea.rebuttals,
+    has_been_submitted=st.session_state.has_been_submitted,
 )
 
 if reason_assignments:
-    if st.button("Use these annotations and proceed with preview", disabled=not(any(reason_assignments.values()))):
+    if st.button(
+        "Use these annotations and proceed with preview",
+        disabled=not(any(reason_assignments.values())) or st.session_state.has_been_submitted,
+    ):
         # clear all previous assigments
         for reason in aea.reasons+aea.objections+aea.rebuttals:
             reason.essay_text_refs = []

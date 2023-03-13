@@ -2,46 +2,23 @@
 
 from typing import List
 
-import copy
 import streamlit as st
 from streamlit_extras.switch_page_button import switch_page
 
-from essay_mentor_app.backend.aea_datamodel import (
-    ArgumentativeEssayAnalysis,
-    Reason,
-)
-from essay_mentor_app.backend.components import (
-    display_reasons,
-    input_reasons,
-    clear_associated_keys,
-)
+from essay_mentor_app.backend.aea_datamodel import ArgumentativeEssayAnalysis
+import essay_mentor_app.backend.components as components
+import backend.utils
 
-st.session_state.update(st.session_state)
 
-st.set_page_config(
-    page_title="Tessy - Essay Tutor",
-    page_icon="👩‍🏫",
-)
-if not "aea" in st.session_state:
-    switch_page("Start")
+# init
+
+backend.utils.page_init()
 aea: ArgumentativeEssayAnalysis = st.session_state.aea
-
-
-## status bar 
-
-#st.sidebar.header("Primary Arguments")
-#progress_bar = st.sidebar.progress(0)
-#status_text = st.sidebar.empty()
-
-
 
 
 # main page
 
-# dummy update sidebar info:
-#i=0.2
-#status_text.text("%i%% Complete" % i)
-#progress_bar.progress(i)
+components.display_submit_notice(st.session_state.has_been_submitted)
 
 if not aea.main_claims:
     st.write(
@@ -52,14 +29,14 @@ if not aea.main_claims:
 
 if aea.reasons:
     st.write("#### Your primary arguments:")
-    display_reasons(aea.reasons, aea.main_claims, parent_name="claim", reason_name="primary argument")
+    components.display_reasons(aea.reasons, aea.main_claims, parent_name="claim", reason_name="primary argument")
 
-    if st.button("Revise primary arguments"):
-        clear_associated_keys(aea.objections)
+    if st.button("Revise primary arguments", disabled=st.session_state.has_been_submitted):
+        backend.utils.clear_associated_keys(aea.objections)
         aea.objections = []
-        clear_associated_keys(aea.rebuttals)
+        backend.utils.clear_associated_keys(aea.rebuttals)
         aea.rebuttals = []
-        clear_associated_keys(aea.reasons)
+        backend.utils.clear_associated_keys(aea.reasons)
         aea.reasons = []
         st.experimental_rerun()
     if aea.objections:
@@ -73,11 +50,12 @@ st.info(
     icon="❔"
 )
 
-reasons, _ = input_reasons(
+reasons, _ = components.input_reasons(
     parent_list=aea.main_claims,
     parent_name="claim",
     reason_name="primary argument",
     expanded_per_default=True,
+    has_been_submitted=st.session_state.has_been_submitted
 )
 
 if reasons:

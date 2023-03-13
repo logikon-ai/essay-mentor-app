@@ -1,41 +1,22 @@
-# page 2: Sumarize your arguments
-
-from typing import List
+# page 4: Sumarize your rebuttals
 
 import streamlit as st
 from streamlit_extras.switch_page_button import switch_page
 
-from essay_mentor_app.backend.aea_datamodel import (
-    ArgumentativeEssayAnalysis,
-    Reason,
-)
+from backend.aea_datamodel import ArgumentativeEssayAnalysis
+import backend.components as components
+import backend.utils
 
-from essay_mentor_app.backend.components import (
-    display_reasons,
-    input_reasons,
-    clear_associated_keys,
-)
 
-st.session_state.update(st.session_state)
+# init
 
-st.set_page_config(
-    page_title="Tessy - Essay Tutor",
-    page_icon="👩‍🏫",
-)
-if not "aea" in st.session_state:
-    switch_page("Start")
+backend.utils.page_init()
 aea: ArgumentativeEssayAnalysis = st.session_state.aea
 
 
-## status bar 
+# main page
 
-#st.sidebar.header("Rebuttals")
-#progress_bar = st.sidebar.progress(0)
-#status_text = st.sidebar.empty()
-
-
-
-
+components.display_submit_notice(st.session_state.has_been_submitted)
 
 if not aea.objections:
     st.write(
@@ -48,10 +29,10 @@ if not aea.objections:
 
 if aea.rebuttals:
     st.write("#### Your rebuttals:")
-    display_reasons(aea.rebuttals, aea.objections, parent_name="objection", reason_name="rebuttal")
+    components.display_reasons(aea.rebuttals, aea.objections, parent_name="objection", reason_name="rebuttal")
 
-    if st.button("Revise objections"):
-        clear_associated_keys(aea.rebuttals)
+    if st.button("Revise objections", disabled=st.session_state.has_been_submitted):
+        backend.utils.clear_associated_keys(aea.rebuttals)
         aea.rebuttals = []
         st.experimental_rerun()
     st.caption("(Revision will delete any data that has been entered on pages hereafter.)")
@@ -59,17 +40,19 @@ if aea.rebuttals:
     if aea.rebuttals:
         st.stop()
 
-st.info(
-    "Which rebuttals to each objection do you present (if any)?",
-    icon="❔"
-)
+if not st.session_state.has_been_submitted:
+    st.info(
+        "Which rebuttals to each objection do you present (if any)?",
+        icon="❔"
+    )
 
-rebuttals, skip = input_reasons(
+rebuttals, skip = components.input_reasons(
     parent_list=aea.objections,
     parent_name="objection",
     reason_name="rebuttal",
     expanded_per_default=False,
     with_skip_button=True,
+    has_been_submitted=st.session_state.has_been_submitted,
 )
 
 if skip:

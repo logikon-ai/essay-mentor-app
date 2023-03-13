@@ -4,7 +4,6 @@ from typing import List
 
 import streamlit as st
 from streamlit_extras.switch_page_button import switch_page
-import uuid
 
 from essay_mentor_app.backend.aea_datamodel import (
     ArgumentativeEssayAnalysis,
@@ -12,32 +11,19 @@ from essay_mentor_app.backend.aea_datamodel import (
     MainQuestion,
 )
 
-from essay_mentor_app.backend.components import (
-    clear_associated_keys
-)
+import essay_mentor_app.backend.components as components
+import backend.utils
 
-st.session_state.update(st.session_state)
 
-st.set_page_config(
-    page_title="Tessy - Essay Tutor",
-    page_icon="👩‍🏫",
-)
-if not "aea" in st.session_state:
-    switch_page("Start")
+# init
+
+backend.utils.page_init()
 aea: ArgumentativeEssayAnalysis = st.session_state.aea
-
-
-## status bar 
-
-#st.sidebar.header("Main Question and Claims")
-#progress_bar = st.sidebar.progress(0)
-#status_text = st.sidebar.empty()
-
-
 
 
 # main page
 
+components.display_submit_notice(st.session_state.has_been_submitted)
 
 if not aea.essaytext_html:
     st.write(
@@ -54,12 +40,12 @@ if aea.main_questions or aea.main_claims:
     for claim in aea.main_claims:
         st.write(f"* **\[{claim.label}\]**: {claim.text}")
 
-    if st.button("Revise main question or claims"):
-        clear_associated_keys(aea.objections)
+    if st.button("Revise main question or claims", disabled=st.session_state.has_been_submitted):
+        backend.utils.clear_associated_keys(aea.objections)
         aea.objections = []
-        clear_associated_keys(aea.rebuttals)
+        backend.utils.clear_associated_keys(aea.rebuttals)
         aea.rebuttals = []
-        clear_associated_keys(aea.reasons)
+        backend.utils.clear_associated_keys(aea.reasons)
         aea.reasons = []
         aea.main_questions = []
         aea.main_claims = []
@@ -114,7 +100,7 @@ elif not main_claims_txt:
 
 if st.button(
     "Use this input and proceed with next step",
-    disabled=not(main_question_txt and main_claims_txt)
+    disabled=not(main_question_txt and main_claims_txt) or st.session_state.has_been_submitted
 ):
 
     main_question = MainQuestion(
