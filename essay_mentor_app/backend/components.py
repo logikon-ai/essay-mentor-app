@@ -240,7 +240,7 @@ def display_essay_annotation_figure(
     reasons: List[Reason] = None,
     objections: List[Reason] = None,
     rebuttals: List[Reason] = None,
-):
+) -> object:
     essay_content_items = [
         element for element in essay
         if element.name not in ['h1','h2','h3','h4']
@@ -332,19 +332,23 @@ def display_essay_annotation_figure(
     colormap = dict([("PrimArg", 'green'), ("Object.", 'red'), ("Rebut.", "blueviolet"), ("None", "gray")])
     color = df.rtype.apply(lambda rtype: colormap.get(rtype))
 
-    fig_data = [go.Parcats(dimensions=[paragraph_dim, reason_dim, rtype_dim],
+    fig_trace = go.Parcats(
+        dimensions=[paragraph_dim, reason_dim, rtype_dim],
         line={'color': color},
         hoveron='dimension', hoverinfo='count'#,
         #labelfont={'size': 12, 'family': 'Sans-Serif'},
         #tickfont={'size': 12, 'family': 'Sans-Serif'}#,
         #arrangement='freeform'
-        )
-    ]
+    )
+    fig_data = [fig_trace]
 
     st.plotly_chart(
         fig_data,
         use_container_width=False
     )
+
+    fig = go.Figure(fig_data)
+    return fig
 
     # Debug:
     #st.experimental_show(essay_content_uids)

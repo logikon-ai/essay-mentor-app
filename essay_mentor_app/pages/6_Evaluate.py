@@ -1,12 +1,17 @@
 # page 6
 
+import os
+import jinja2
+import pdfkit
 import streamlit as st
 from streamlit_extras.switch_page_button import switch_page
 
 from essay_mentor_app.backend.aea_datamodel import ArgumentativeEssayAnalysis
 import essay_mentor_app.backend.components as components
 import backend.utils
+import backend.templates
 
+ANNOTATION_FIGURE_PATH = "essay_annotation_figure.svg"
 
 # init
 
@@ -53,13 +58,15 @@ components.display_essay_annotation_metrics(
     rebuttals=aea.rebuttals,
 )
 st.caption("Mapping of paragraphs in the essay (left column) to reasons (middle and right column):")
-components.display_essay_annotation_figure(
+fig = components.display_essay_annotation_figure(
     aea.essay_content_items,
     reasons=aea.reasons,
     objections=aea.objections,
     rebuttals=aea.rebuttals,
 )
 
+fig.write_image(ANNOTATION_FIGURE_PATH)
+# st.image(ANNOTATION_FIGURE_PATH) # debugging
 
 def on_submit():
     st.session_state["has_been_submitted"] = True
@@ -89,3 +96,22 @@ if st.session_state.has_been_submitted:
     )
     st.markdown("### Individual scores per argument")
     components.dummy_show_detailed_scores(aea)
+
+    # read svg file
+    with open(ANNOTATION_FIGURE_PATH, "r") as f:
+        svg = f.read()
+    report_data = {
+        "svg": svg,
+        "reason_hierarchy": "JUST A TEST MAP"
+    }
+    # load jinja template from backend.templates.REPORT_TEMPLATE
+    template = jinja2.Template(backend.templates.REPORT_TEMPLATE)
+    report_html = template.render(**report_data)
+    # st.markdown(report_html, unsafe_allow_html=True) # debugging
+    report_pdf = pdfkit.from_string(report_html, False)
+    st.download_button(
+        "⬇️ Download Report (PDF)",
+        data=report_pdf,
+        file_name="report.pdf",
+        mime="application/octet-stream",
+    )
