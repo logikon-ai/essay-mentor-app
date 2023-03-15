@@ -43,6 +43,7 @@ with st.expander(
         objections=aea.objections,
         rebuttals=aea.rebuttals,
     )
+    st.write("")
 
 st.write("------")
 st.write("Select reasons that are discussed in each corresponding paragraph:")

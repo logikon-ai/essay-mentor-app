@@ -53,6 +53,7 @@ with st.expander("Reason hierarchy as nested list"):
         objections=aea.objections,
         rebuttals=aea.rebuttals,
     )
+    st.write("")
 
 st.markdown("### Essay Annotation")
 
@@ -104,6 +105,8 @@ if st.session_state.has_been_submitted:
     )
     st.markdown("### Individual scores per argument")
     components.dummy_show_detailed_scores(aea)
+
+    st.markdown("------")
 
     # read svg file
     with open(ANNOTATION_FIGURE_PATH, "r") as f:

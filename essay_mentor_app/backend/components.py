@@ -111,44 +111,52 @@ def display_argument_map(
     """construct, display and return argument map"""
 
     NODE_TEMPLATE = """<
-    <TABLE BORDER="0" COLOR="#444444" CELLPADDING="10" CELLSPACING="2">
-    <TR><TD BORDER="0" BGCOLOR="{bgcolor}" STYLE="rounded"><FONT FACE="sans serif" POINT-SIZE="12"><B>[{label}]</B> {text}</FONT></TD></TR>
-    </TABLE>
+    <TABLE BORDER="0" COLOR="#444444" CELLPADDING="8" CELLSPACING="2"><TR><TD BORDER="0" BGCOLOR="{bgcolor}" STYLE="rounded" ALIGN="center"><FONT FACE="sans serif;Arial;Helvetica;" POINT-SIZE="10.5"><B>[{label}]</B><br/>{text}</FONT></TD></TR></TABLE>
     >"""
-
+    
     graph = graphviz.Digraph()
     graph.attr(ratio="compress", size="6,10", orientation="portrait", overlay="compress", rankdir="BT")
+    graph.attr("node", shape="plaintext")
 
-    bgcolor: Dict[str,str] = {}
-    bgcolor.update({x.uid:"white" for x in claims})
-    bgcolor.update({x.uid:"lightblue" for x in reasons+objections+rebuttals})
     edgecolor: Dict[str,str] = {}
     edgecolor.update({x.uid:"green" for x in reasons})
-    edgecolor.update({x.uid:"red" for x in objections+rebuttals})
+    edgecolor.update({x.uid:"red" for x in objections})
+    edgecolor.update({x.uid:"blueviolet" for x in rebuttals})
+
+    with graph.subgraph(name="claims") as subgraph:
+        subgraph.attr(rank="same")
+        for claim in claims:
+            textlines = textwrap.wrap(claim.text, width=30)
+            text = "<BR/>".join(textlines)
+            subgraph.node(
+                "node-%s" % claim.uid,
+                NODE_TEMPLATE.format(
+                    text=text,
+                    label=claim.label,
+                    bgcolor="lightgray",
+                ),
+                tooltip=textwrap.fill(claim.text, width=30),
+            )
     
-    for content_item in claims+reasons+objections+rebuttals:
-        # wrap text
-        textlines = textwrap.wrap("(X) " + content_item.text, width=30)
-        text = "<BR/>".join(textlines)[4:]
-        # create node
-        graph.attr("node", shape="plaintext")
+    for reason in reasons+objections+rebuttals:
+        textlines = textwrap.wrap(reason.text, width=30)
+        text = "<BR/>".join(textlines)
         graph.node(
-            "node-%s" % content_item.uid,
+            "node-%s" % reason.uid,
             NODE_TEMPLATE.format(
                 text=text,
-                label=content_item.label,
-                bgcolor=bgcolor[content_item.uid],
-                color="lightblue" if bgcolor[content_item.uid]=="white" else "white",
+                label=reason.label,
+                bgcolor="lightblue",
             ),
-            tooltip=textwrap.fill(content_item.text, width=30),
+            tooltip=textwrap.fill(reason.text, width=30),
         )
         # add edge
-        if isinstance(content_item, Reason):
-            graph.edge(
-                "node-%s" % content_item.uid,
-                "node-%s" % content_item.parent_uid,
-                color=edgecolor[content_item.uid]
-            )
+        graph.edge(
+            "node-%s" % reason.uid,
+            "node-%s" % reason.parent_uid,
+            color=edgecolor[reason.uid],
+            penwidth="1.5",
+        )
 
     st.graphviz_chart(graph)
     try:
@@ -178,6 +186,12 @@ def display_reasons_hierarchy(
                         for rebuttal in rebuttals:
                             if rebuttal.parent_uid == objection.uid:
                                 markdown_lines.append(f"      * **\[{rebuttal.label}\]**: {rebuttal.text}")
+        for objection in objections:
+            if objection.parent_uid == claim.uid:
+                markdown_lines.append(f"  * **\[{objection.label}\]**: {objection.text}")
+                for rebuttal in rebuttals:
+                    if rebuttal.parent_uid == objection.uid:
+                        markdown_lines.append(f"    * **\[{rebuttal.label}\]**: {rebuttal.text}")
     st.markdown("\n".join(markdown_lines))
 
 
@@ -196,7 +210,7 @@ def input_reasons(
         #    ir.text for ir in initial_reasons
         #    if ir.parent_uid==parent.uid
         #])
-        key=f"reasons_txt_{parent.uid}"
+        key=f"{reason_name}_txt_{parent.uid}"
         expanded = expanded_per_default or bool(st.session_state.get(key, None))
         with st.expander(f"\[{parent.label}\]: {parent.text}", expanded=expanded):
             reasons_text_areas.append(
@@ -481,13 +495,13 @@ def dummy_show_detailed_scores(aea):
         explanation = st.expander("More details and explanation...", expanded=False)
         with explanation:
             summary = f"It is <b>very likely</b> that [{argument.label}] is related to further arguments in another way than specified by the author (i.e., not as pro reason for [xxx]). Most plausible alternatives:"
-            details = f"<ul><li>Pro reason for [Obj2] (23%)</li><li>Con reason against [Claim1] (12%)</li><li>Pro reason for [Rbt3] (11%)</li></ul>"
+            details = f"<ol><li>Pro reason for [Obj2] (23%)</li><li>Con reason against [Claim1] (12%)</li><li>Pro reason for [Rbt3] (11%)</li></ol>"
             st.markdown(
                 f"<p>{summary}</p><p>{details}</p>",
                 unsafe_allow_html=True
             )
             summary = f"It is <b>unlikely</b> that [{argument.label}] appears in the essay at different places than specified by the author. Most plausible alternatives:"
-            details = f"<ul><li>Discussed in ¶002 (15%)</li><li>Not discussed in ¶003 (12%)</li><li>Discussed in ¶001 (4%)</li></ul>"
+            details = f"<ol><li>Discussed in ¶002 (15%)</li><li>Not discussed in ¶003 (12%)</li><li>Discussed in ¶001 (4%)</li></ol>"
             st.markdown(
                 f"<p>{summary}</p><p>{details}</p>",
                 unsafe_allow_html=True

@@ -47,13 +47,13 @@ if aea.objections:
 
 if not st.session_state.has_been_submitted:
     st.info(
-        "Which objections to each primary argument do you discuss (if any)?",
+        "Which objections to each primary argument, or claim, do you discuss (if any)?",
         icon="❔"
     )
 
 objections, skip = components.input_reasons(
-    parent_list=aea.reasons,
-    parent_name="primary argument",
+    parent_list=aea.reasons+aea.main_claims,
+    parent_name="primary argument/claim",
     reason_name="objection",
     expanded_per_default=False,
     with_skip_button=True,
