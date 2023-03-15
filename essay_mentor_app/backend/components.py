@@ -2,14 +2,14 @@
 
 from typing import List, Tuple, Union, Optional, Dict
 
-from bs4 import BeautifulSoup
-import plotly.graph_objects as go
+import graphviz
 import numpy as np
 import pandas as pd
+import plotly.graph_objects as go
 import random
 import streamlit as st
 from streamlit_extras.switch_page_button import switch_page
-import uuid
+import textwrap
 
 from essay_mentor_app.backend.aea_datamodel import (
     EssayContentItem,
@@ -101,6 +101,64 @@ def display_reasons(
             st.write(f"{reason_name}s that address {parent_name} \[{parent.label}\] ({parent.text}):")
             st.write("\n".join(list_items))
 
+
+def display_argument_map(
+    claims: List[MainClaim],
+    reasons: List[Reason],
+    objections: List[Reason],
+    rebuttals: List[Reason],
+) -> Optional[str]:
+    """construct, display and return argument map"""
+
+    NODE_TEMPLATE = """<
+    <TABLE BORDER="0" COLOR="#444444" CELLPADDING="10" CELLSPACING="2">
+    <TR><TD BORDER="0" BGCOLOR="{bgcolor}" STYLE="rounded"><FONT FACE="sans serif" POINT-SIZE="12"><B>[{label}]</B> {text}</FONT></TD></TR>
+    </TABLE>
+    >"""
+
+    graph = graphviz.Digraph()
+    graph.attr(ratio="compress", size="6,10", orientation="portrait", overlay="compress", rankdir="BT")
+
+    bgcolor: Dict[str,str] = {}
+    bgcolor.update({x.uid:"white" for x in claims})
+    bgcolor.update({x.uid:"lightblue" for x in reasons+objections+rebuttals})
+    edgecolor: Dict[str,str] = {}
+    edgecolor.update({x.uid:"green" for x in reasons})
+    edgecolor.update({x.uid:"red" for x in objections+rebuttals})
+    
+    for content_item in claims+reasons+objections+rebuttals:
+        # wrap text
+        textlines = textwrap.wrap("(X) " + content_item.text, width=30)
+        text = "<BR/>".join(textlines)[4:]
+        # create node
+        graph.attr("node", shape="plaintext")
+        graph.node(
+            "node-%s" % content_item.uid,
+            NODE_TEMPLATE.format(
+                text=text,
+                label=content_item.label,
+                bgcolor=bgcolor[content_item.uid],
+                color="lightblue" if bgcolor[content_item.uid]=="white" else "white",
+            ),
+            tooltip=textwrap.fill(content_item.text, width=30),
+        )
+        # add edge
+        if isinstance(content_item, Reason):
+            graph.edge(
+                "node-%s" % content_item.uid,
+                "node-%s" % content_item.parent_uid,
+                color=edgecolor[content_item.uid]
+            )
+
+    st.graphviz_chart(graph)
+    try:
+        graph_svg = graph.pipe(format="svg", encoding='utf-8')
+        graph_svg = graph_svg[153:] # strip xml header
+        graph_svg.strip()
+        return graph_svg
+    except Exception as exc:
+        st.error(f"Error while generating argument map: {exc}")
+        return None
 
 def display_reasons_hierarchy(
     claims: List[MainClaim],
@@ -199,7 +257,9 @@ def display_essay_annotation_metrics(
     rebuttals: List[Reason] = None,
 ):
     # list of all arguments
-    arguments: List[Reason] = reasons or []
+    arguments: List[Reason] = []
+    if reasons:
+        arguments += reasons
     if objections:
         arguments += objections
     if rebuttals:
@@ -399,7 +459,9 @@ def eval_scores_table(data: Dict[str,int]) -> str:
 
 def dummy_show_detailed_scores(aea):
     # list of all arguments
-    arguments: List[Reason] = aea.reasons or []
+    arguments: List[Reason] = []
+    if aea.reasons:
+        arguments += aea.reasons
     if aea.objections:
         arguments += aea.objections
     if aea.rebuttals:

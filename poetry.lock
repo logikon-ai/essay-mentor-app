@@ -515,6 +515,23 @@ files = [
 gitdb = ">=4.0.1,<5"
 
 [[package]]
+name = "graphviz"
+version = "0.20.1"
+description = "Simple Python interface for Graphviz"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "graphviz-0.20.1-py3-none-any.whl", hash = "sha256:587c58a223b51611c0cf461132da386edd896a029524ca61a1462b880bf97977"},
+    {file = "graphviz-0.20.1.zip", hash = "sha256:8c58f14adaa3b947daf26c19bc1e98c4e0702cdc31cf99153e6f06904d492bf8"},
+]
+
+[package.extras]
+dev = ["flake8", "pep8-naming", "tox (>=3)", "twine", "wheel"]
+docs = ["sphinx (>=5)", "sphinx-autodoc-typehints", "sphinx-rtd-theme"]
+test = ["coverage", "mock (>=4)", "pytest (>=7)", "pytest-cov", "pytest-mock (>=3)"]
+
+[[package]]
 name = "htbuilder"
 version = "0.6.1"
 description = "A purely-functional HTML builder for Python. Think JSX rather than templates."
@@ -2175,4 +2192,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.9.7 || >3.9.7,<4.0"
-content-hash = "c058c7412c4a0281900e5050c59c69f6e6c7d4aaecb17375bbc9b7ba4dbff952"
+content-hash = "1926ecb9111100abba58c235cc1ab286fefa924f8d152c96e67cea50bbc568d0"

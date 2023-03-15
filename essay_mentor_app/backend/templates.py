@@ -15,11 +15,16 @@ body {
 <h1>Report</h1>
 
 <h3>Reason hierarchy</h3>
-{{ reason_hierarchy }}
+
+<p>{{ reason_hierarchy }}</p>
+
+<div style="width: 100%; overflow: auto;">
+{{ argmap_svg }}
+</div>
 
 <h3>Essay annotation</h3>
 <div style="width: 100%; overflow: auto;">
-{{ svg }}
+{{ annotation_svg }}
 </div>
 
 <h3>Evaluation</h3>

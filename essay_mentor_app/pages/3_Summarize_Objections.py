@@ -68,3 +68,5 @@ if objections:
     aea.objections = objections
     switch_page("Summarize Rebuttals")
 
+#import dataclasses
+#st.json(dataclasses.asdict(aea))

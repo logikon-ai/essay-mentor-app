@@ -63,6 +63,8 @@ if rebuttals:
     aea.rebuttals = rebuttals
     switch_page("Connect Arguments To Text")
 
+#import dataclasses
+#st.json(dataclasses.asdict(aea))
 
 
 

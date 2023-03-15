@@ -39,15 +39,21 @@ if not st.session_state.has_been_submitted:
 
 st.markdown("### Reason hierarchy")
 st.caption("Arguments, objections, rebuttals as summarized before:")
-components.display_reasons_hierarchy(
+#components.display_reasons_hierarchy(
+#    claims=aea.main_claims,
+#    reasons=aea.reasons,
+#    objections=aea.objections,
+#    rebuttals=aea.rebuttals,
+#)
+argmap_svg = components.display_argument_map(
     claims=aea.main_claims,
     reasons=aea.reasons,
     objections=aea.objections,
     rebuttals=aea.rebuttals,
 )
+#st.write(argmap_svg) # debugging
 
 st.markdown("### Essay Annotation")
-
 
 components.display_essay_annotation_metrics(
     aea.essay_content_items,
@@ -55,6 +61,8 @@ components.display_essay_annotation_metrics(
     objections=aea.objections,
     rebuttals=aea.rebuttals,
 )
+
+
 st.caption("Mapping of paragraphs in the essay (left column) to reasons (middle and right column):")
 fig = components.display_essay_annotation_figure(
     aea.essay_content_items,
@@ -65,6 +73,7 @@ fig = components.display_essay_annotation_figure(
 
 fig.write_image(ANNOTATION_FIGURE_PATH)
 # st.image(ANNOTATION_FIGURE_PATH) # debugging
+
 
 def on_submit():
     st.session_state["has_been_submitted"] = True
@@ -97,9 +106,10 @@ if st.session_state.has_been_submitted:
 
     # read svg file
     with open(ANNOTATION_FIGURE_PATH, "r") as f:
-        svg = f.read()
+        annotation_svg = f.read()
     report_data = {
-        "svg": svg,
+        "argmap_svg": argmap_svg,
+        "annotation_svg": annotation_svg,
         "reason_hierarchy": "JUST A TEST MAP"
     }
     # load jinja template from backend.templates.REPORT_TEMPLATE
