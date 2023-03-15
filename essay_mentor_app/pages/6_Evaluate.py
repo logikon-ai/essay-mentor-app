@@ -39,12 +39,6 @@ if not st.session_state.has_been_submitted:
 
 st.markdown("### Reason hierarchy")
 st.caption("Arguments, objections, rebuttals as summarized before:")
-#components.display_reasons_hierarchy(
-#    claims=aea.main_claims,
-#    reasons=aea.reasons,
-#    objections=aea.objections,
-#    rebuttals=aea.rebuttals,
-#)
 argmap_svg = components.display_argument_map(
     claims=aea.main_claims,
     reasons=aea.reasons,
@@ -52,6 +46,13 @@ argmap_svg = components.display_argument_map(
     rebuttals=aea.rebuttals,
 )
 #st.write(argmap_svg) # debugging
+with st.expander("Reason hierarchy as nested list"):
+    components.display_reasons_hierarchy(
+        claims=aea.main_claims,
+        reasons=aea.reasons,
+        objections=aea.objections,
+        rebuttals=aea.rebuttals,
+    )
 
 st.markdown("### Essay Annotation")
 
