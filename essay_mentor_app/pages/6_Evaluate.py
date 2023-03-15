@@ -1,10 +1,8 @@
 # page 6
 
-import os
 import jinja2
 import pdfkit
 import streamlit as st
-from streamlit_extras.switch_page_button import switch_page
 
 from essay_mentor_app.backend.aea_datamodel import ArgumentativeEssayAnalysis
 import essay_mentor_app.backend.components as components
@@ -108,6 +106,8 @@ if st.session_state.has_been_submitted:
     template = jinja2.Template(backend.templates.REPORT_TEMPLATE)
     report_html = template.render(**report_data)
     # st.markdown(report_html, unsafe_allow_html=True) # debugging
+
+
     report_pdf = pdfkit.from_string(report_html, False)
     st.download_button(
         "⬇️ Download Report (PDF)",
