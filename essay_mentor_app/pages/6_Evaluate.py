@@ -91,9 +91,14 @@ if st.session_state.has_been_submitted:
         with st.spinner("Evaluating your essay ..."):
             import time
             time.sleep(2)
-            st.session_state["evaluation_result"] = {"some": "result"}
+            evaluation_result = backend.utils.get_aea_evaluation(aea)
+            st.session_state["evaluation_result"] = evaluation_result
+
 
     st.markdown("## Evaluation")
+
+    st.json(st.session_state.evaluation_result)
+
     st.caption("😩 erroneous, 😟 implausible, 😐 arbitrary, 😊 plausible, 😄 compelling")
     st.markdown("### Overall score")
     st.markdown(
