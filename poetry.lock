@@ -743,6 +743,28 @@ files = [
 ]
 
 [[package]]
+name = "logikon-client"
+version = "1.0.0"
+description = ""
+category = "main"
+optional = false
+python-versions = "*"
+files = []
+develop = false
+
+[package.dependencies]
+certifi = "*"
+python-dateutil = "*"
+six = ">=1.10"
+urllib3 = ">=1.15"
+
+[package.source]
+type = "git"
+url = "https://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@github.com/logikon-ai/logikon-client.git"
+reference = "HEAD"
+resolved_reference = "51ff536ac82ff6759c0ebc0e0749c832b97f7884"
+
+[[package]]
 name = "lxml"
 version = "4.9.2"
 description = "Powerful and Pythonic XML processing library combining libxml2/libxslt with the ElementTree API."
@@ -2192,4 +2214,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.9.7 || >3.9.7,<4.0"
-content-hash = "1926ecb9111100abba58c235cc1ab286fefa924f8d152c96e67cea50bbc568d0"
+content-hash = "0ec830a1ba22935d96c6047c00e961d2bf909b9f5092cf1fe34144e33bc4ec69"

@@ -1,6 +1,10 @@
 from io import StringIO
 import logging
+import subprocess
+import sys
+import time
 
+import graphviz
 import markdown
 import markdownify
 import plotly.graph_objects as go
@@ -14,7 +18,25 @@ import backend.components as components
 import backend.examples
 import backend.utils
 
-import graphviz
+
+try:
+    # replace "yourpackage" with the package you want to import
+    import logikon_client
+
+# This block executes only on the first run when your package isn't installed
+except ModuleNotFoundError as e:
+    
+    # if snippet below fails, try with:
+    #   import os
+    #   os.environ['GH_ACCESS_TOKEN']
+
+    subprocess.Popen([f'{sys.executable} -m pip install git+https://${{GH_ACCESS_TOKEN}}@github.com/logikon-ai/logikon-client.git'], shell=True)
+    # wait for subprocess to install package before running your actual code below
+    time.sleep(90)
+  
+    import logikon_client
+
+
 
 # init
 backend.utils.page_init(is_startpage=True)
@@ -26,7 +48,6 @@ def main():
 
     st.title('TESSY - Essay Tutor')
     st.write('**The AI Co-Tutor that supports you in writing better essays, and your teacher in grading them.**')
-
 
     if not "aea" in st.session_state:
         st.session_state["aea"] = ArgumentativeEssayAnalysis()
