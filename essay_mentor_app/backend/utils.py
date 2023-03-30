@@ -13,9 +13,6 @@ from essay_mentor_app.backend.aea_datamodel import (
     Reason,
 )
 
-import logikon_client
-from logikon_client.rest import ApiException
-
 
 def page_init(is_startpage=False):
     if not is_startpage:
@@ -66,72 +63,84 @@ def parse_essay_content(essay_html) -> List[EssayContentItem]:
 
 
 def get_aea_evaluation(aea: ArgumentativeEssayAnalysis) -> str:
+    #TODO: rewrite with requests library
 
-    #cast aea as an ArgAnnotation
-    nodelist = []
-    edgelist = []
-    for claim in aea.main_claims:
-        nodelist.append(
-            logikon_client.ArgMapNode(
-                id=claim.uid,
-                text=claim.text,
-                label=claim.label,
-            )
-        )
-    arguments = aea.reasons if aea.reasons else []
-    if aea.objections:
-        arguments += aea.objections
-    if aea.rebuttals:
-        arguments += aea.rebuttals
-    for argument in arguments:
-        nodelist.append(
-            logikon_client.ArgMapNode(
-                id=argument.uid,
-                text=argument.text,
-                label=argument.label,
-                annotation_references=argument.essay_text_refs
-            )
-        )
-        edgelist.append(
-            logikon_client.ArgMapEdgelist(
-                source=argument.uid,
-                target=argument.parent_uid,
-                valence="pro" if argument in aea.reasons else "con",
-            )
-        )
-
-    argmap = logikon_client.ArgMap(
-        nodelist = nodelist,
-        edgelist = edgelist,
-    )
-
-    text_content_items = []
-    for essay_element in aea.essay_content_items:
-        text_content_items.append(
-            logikon_client.TextContentItem(
-                id = essay_element.uid,
-                text = essay_element.text,
-                name = essay_element.label,
-            )
-        )
-    body = logikon_client.ArgAnnotation(
-        argmap = argmap,
-        text_content_items = text_content_items,
-    )
-    precision = 'medium' 
-
-    # Configure API key authorization: api_key
-    configuration = logikon_client.Configuration()
-    configuration.host = st.secrets["logikon_server"]["url"]
-    configuration.api_key['X-Auth'] = st.secrets["logikon_server"]["token"]
-
-    # ApiInstance
-    api_instance = logikon_client.MetricsApi(logikon_client.ApiClient(configuration))
-
-    try:
-        # Assesses the plausibility of an argumentative text annotation applying diverse metrics
-        api_response = api_instance.evaluate_arg_annotation(body=body, precision=precision)
-    except ApiException as e:
-        st.error("Exception when calling MetricsApi->evaluate_arg_annotation: %s\n" % e)
-
-    return api_response
+#     #cast aea as an ArgAnnotation
+#     nodelist = []
+#     edgelist = []
+#     for claim in aea.main_claims:
+#         nodelist.append(
+#             logikon_client.ArgMapNode(
+#                 id=claim.uid,
+#                 text=claim.text,
+#                 label=claim.label,
+#             )
+#         )
+#     arguments = aea.reasons if aea.reasons else []
+#     if aea.objections:
+#         arguments += aea.objections
+#     if aea.rebuttals:
+#         arguments += aea.rebuttals
+#     for argument in arguments:
+#         nodelist.append(
+#             logikon_client.ArgMapNode(
+#                 id=argument.uid,
+#                 text=argument.text,
+#                 label=argument.label,
+#                 annotation_references=[
+#                     logikon_client.ArgMapNodeAnnotationReferences(
+#                         text_content_id=ref, start=0,end=-1)
+#                     for ref in argument.essay_text_refs
+#                 ]
+#             )
+#         )
+#         edgelist.append(
+#             logikon_client.ArgMapEdgelist(
+#                 source=argument.uid,
+#                 target=argument.parent_uid,
+#                 valence="pro" if argument in aea.reasons else "con",
+#             )
+#         )
+# 
+#     argmap = logikon_client.ArgMap(
+#         nodelist = nodelist,
+#         edgelist = edgelist,
+#     )
+# 
+#     text_content_items = []
+#     for essay_element in aea.essay_content_items:
+#         text_content_items.append(
+#             logikon_client.TextContentItem(
+#                 id = essay_element.uid,
+#                 text = essay_element.text,
+#                 name = essay_element.label,
+#             )
+#         )
+#     body = logikon_client.ArgAnnotation(
+#         argmap = argmap,
+#         text_content_items = text_content_items,
+#     )
+#     precision = 'medium' 
+# 
+#     # Configure API key authorization: api_key
+#     configuration = logikon_client.Configuration()
+#     configuration.host = st.secrets["logikon_server"]["url"]
+#     configuration.api_key['X-Auth'] = st.secrets["logikon_server"]["token"]
+# 
+#     # ApiInstance
+#     api_instance = logikon_client.MetricsApi(logikon_client.ApiClient(configuration))
+# 
+#     try:
+#         # Assesses the plausibility of an argumentative text annotation applying diverse metrics
+#         api_response = api_instance.evaluate_arg_annotation(body=body, precision=precision)
+#     except ApiException as e:
+#         st.error("Exception when calling MetricsApi->evaluate_arg_annotation: %s\n" % e)
+#         api_response = {
+#             "error": str(e),
+#             "body": body,
+#         }
+# 
+#     st.info(body)
+#     st.info(type(api_response))
+# 
+#     return api_response

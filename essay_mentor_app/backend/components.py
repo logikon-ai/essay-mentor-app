@@ -202,6 +202,7 @@ def input_reasons(
     expanded_per_default = True,
     with_skip_button = False,
     has_been_submitted = False,
+    default_value = "",
 ) -> Tuple[List[Reason],bool]:
     
     reasons_text_areas = []
@@ -216,7 +217,7 @@ def input_reasons(
             reasons_text_areas.append(
                 st.text_area(
                     f"Summarize {reason_name}s for this {parent_name} (separated by empty lines)",
-                    #value=initial_text,
+                    value=default_value,
                     height=120,
                     key=key,
                     disabled=has_been_submitted,

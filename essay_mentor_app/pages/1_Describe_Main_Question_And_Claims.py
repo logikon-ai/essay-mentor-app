@@ -72,13 +72,17 @@ st.caption(
 main_question_txt = st.text_area(
     "Enter your main question here",
     height=30,
-    key="main_question"
+    key="main_question",
+    value="""Is it ok to eat animals?     
+    """if st.session_state.DEBUG else ""
 )
 
 main_claims_txt = st.text_area(
     "Enter your central claim(s) here (separataed by empty lines)",
     height=200,
-    key="central_claims"
+    key="central_claims",
+    value="""It is categorically wrong to eat animals today.
+    """ if st.session_state.DEBUG else ""
 )
 
 

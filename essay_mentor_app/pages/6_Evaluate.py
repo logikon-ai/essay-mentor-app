@@ -89,8 +89,6 @@ if st.session_state.has_been_submitted:
 
     if not "evaluation_result" in st.session_state:
         with st.spinner("Evaluating your essay ..."):
-            import time
-            time.sleep(2)
             evaluation_result = backend.utils.get_aea_evaluation(aea)
             st.session_state["evaluation_result"] = evaluation_result
 

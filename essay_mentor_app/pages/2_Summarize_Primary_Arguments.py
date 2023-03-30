@@ -55,7 +55,13 @@ reasons, _ = components.input_reasons(
     parent_name="claim",
     reason_name="primary argument",
     expanded_per_default=True,
-    has_been_submitted=st.session_state.has_been_submitted
+    has_been_submitted=st.session_state.has_been_submitted,
+    default_value="Animal farming contributes to climate heating.\n\n"
+    "Animals have feelings and can suffer, especially when they are "
+    "farmed and slaughtered.\n\n"
+    "Animal farming creates a lot of joy and happiness: For farmers, "
+    "children, and least but not least for the happy animals "
+    "themselves." if st.session_state.DEBUG else ""
 )
 
 if reasons:
