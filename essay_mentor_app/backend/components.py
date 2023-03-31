@@ -12,6 +12,7 @@ from streamlit_extras.switch_page_button import switch_page
 import textwrap
 
 from essay_mentor_app.backend.aea_datamodel import (
+    ArgumentativeEssayAnalysis,
     EssayContentItem,
     BaseContentItem,
     MapContentItem,
@@ -472,6 +473,130 @@ def eval_scores_table(data: Dict[str,int]) -> str:
     return table_header + data_rows + table_footer
 
 
+def display_evaluation_results(evaluation_results: Dict[str,Dict], aea: ArgumentativeEssayAnalysis):
+    argmap_metrics = evaluation_results.get("argmap_metrics")
+    annotation_metrics = evaluation_results.get("annotation_metrics")
+
+    # helper function
+    def num_score(score:Optional[Union[str,float]]) -> Optional[int]:
+        EVAL_CATEGORIES = ["erroneous", "implausible", "arbitrary", "plausible", "compelling"]
+        if score is None:
+            return None
+        if isinstance(score, str):
+            return EVAL_CATEGORIES.index(score)
+        if score > 0.8:
+            return 4
+        if score > 0.55:
+            return 3
+        if score > 0.45:
+            return 2
+        if score > 0.2:
+            return 1
+        return 0
+    
+    def inv_uncertainty_cat(numscore: float) -> str:
+        if numscore < 0.2:
+            uncertainty_cat = "very likely"
+        elif numscore < 0.5:
+            uncertainty_cat = "likely"
+        elif numscore < 0.8:
+            uncertainty_cat = "unlikely"
+        else:
+            uncertainty_cat = "very unlikely"
+        return uncertainty_cat
+
+    def format_argm_alt(alt_info:Dict) -> str:
+        target = alt_info["alternative"]["edgelist"][0]["target"]
+        target = None if target == "None" else target
+        valence = alt_info["alternative"]["edgelist"][0].get("valence")
+        probability = alt_info.get("probability")
+        if target is None:
+            return f"<li>Root claim ({probability*100:.0f}%)</li>"
+        if valence == "pro":
+            return f"<li>Pro reason for [{aea.get_map_node_by_uid(target).label}] ({probability*100:.0f}%)</li>"
+        if valence == "con":
+            return f"<li>Con reason against [{aea.get_map_node_by_uid(target).label}] ({probability*100:.0f}%)</li>"
+        return "<li>Unspecified alternative</li>"
+
+    def format_anno_alt(alt_info:Dict) -> str:
+        return "<li>formatted alternative</li>"
+
+
+    st.caption("😩 erroneous, 😟 implausible, 😐 arbitrary, 😊 plausible, 😄 compelling")
+    st.markdown("### Overall score")
+    st.markdown(
+        eval_scores_table({
+            "Argumentative analysis (reason hierarchy)": num_score(argmap_metrics["globalScore"]["qualitativeScore"]),
+            "Linkage of arguments to text (essay annotation)": num_score(annotation_metrics["globalScore"]["qualitativeScore"]),
+        }),
+        unsafe_allow_html=True
+    )
+
+    st.markdown("### Individual scores per argument")
+
+    # list of all arguments
+    arguments: List[Reason] = []
+    if aea.reasons:
+        arguments += aea.reasons
+    if aea.objections:
+        arguments += aea.objections
+    if aea.rebuttals:
+        arguments += aea.rebuttals
+
+    for argument in arguments:
+        st.write(" ")
+        st.write(f"###### [{argument.label}]: {argument.text}")
+        annorefs = ", ".join([
+            f"{aea.get_essay_item_by_uid(uid).formatted_label()}"
+            for uid in argument.essay_text_refs
+        ])
+        st.caption(f"Linked to paragraphs: {annorefs}")
+
+        anno_mtr = next(x for x in annotation_metrics["individualScores"] if x["idRef"]==argument.uid)
+        argm_mtr = next(x for x in argmap_metrics["individualScores"] if x["idRef"]==argument.uid)
+
+        qual_argm_score = argm_mtr["score"].get("qualitativeScore")
+        if qual_argm_score is None:
+            qual_argm_score = argm_mtr["score"].get("numericalScore")
+
+        scores = {
+            f"Argumentative relation of [{argument.label}] to further arguments": (
+                num_score(qual_argm_score)
+            ),
+            f"Link of [{argument.label}] to paragraphs in the essay": (
+                num_score(anno_mtr["score"]["qualitativeScore"])
+            ),
+        }
+        st.markdown(
+            eval_scores_table(scores),
+            unsafe_allow_html=True
+        )
+
+        explanation = st.expander("More details and explanation...", expanded=False)
+        with explanation:
+            # argument map
+            numscore = argm_mtr["score"].get("numericalScore")
+            if numscore is not None:
+                summary = f"It is <b>{inv_uncertainty_cat(numscore)}</b> that [{argument.label}] is related to further arguments in another way than specified by the author (i.e., not as pro reason for [{aea.get_map_node_by_uid(argument.parent_uid).label}]). Most plausible alternatives:"
+                alternatives = [format_argm_alt(x) for x in argm_mtr["topAlternatives"]]
+                alternatives = "".join(alternatives)
+                details = f"<ol>{alternatives}</ol>"
+                st.markdown(
+                    f"<p>{summary}</p><p>{details}</p>",
+                    unsafe_allow_html=True
+                )
+            # text annotation
+            numscore = anno_mtr["score"].get("numericalScore")
+            if numscore is not None:
+                summary = f"It is <b>{inv_uncertainty_cat(numscore)}</b> that [{argument.label}] appears in the essay at different places than specified by the author. Most plausible alternatives:"
+                details = ""
+                st.markdown(
+                    f"<p>{summary}</p><p>{details}</p>",
+                    unsafe_allow_html=True
+                )
+
+
+
 def dummy_show_detailed_scores(aea):
     # list of all arguments
     arguments: List[Reason] = []
@@ -483,7 +608,7 @@ def dummy_show_detailed_scores(aea):
         arguments += aea.rebuttals
 
     for argument in arguments:
-        st.write(f"##### [{argument.label}]: {argument.text}")
+        st.write(f"###### [{argument.label}]: {argument.text}")
         st.caption(f"Linked to paragraphs: ¶003, ¶005")
         dummy_scores = {
             f"Argumentative relation of [{argument.label}] to further arguments":random.randint(0,4),

@@ -1,6 +1,8 @@
 # utils.py
 
-from typing import List
+from typing import List, Tuple, Dict
+import json
+import requests
 
 from bs4 import BeautifulSoup
 import streamlit as st
@@ -62,85 +64,60 @@ def parse_essay_content(essay_html) -> List[EssayContentItem]:
     return content_items
 
 
-def get_aea_evaluation(aea: ArgumentativeEssayAnalysis) -> str:
-    #TODO: rewrite with requests library
+def get_aea_evaluation(aea: ArgumentativeEssayAnalysis) -> Dict[str,Dict]:
+    """Get evaluation of ArgumentativeEssayAnalysis from logikon server
+    Args:
+        aea (ArgumentativeEssayAnalysis): ArgumentativeEssayAnalysis object
+    Returns:
+        Tuple[Dict,Dict]: MetricsCollection for argument map, MetricsCollection for text annotation
+    """
 
-#     #cast aea as an ArgAnnotation
-#     nodelist = []
-#     edgelist = []
-#     for claim in aea.main_claims:
-#         nodelist.append(
-#             logikon_client.ArgMapNode(
-#                 id=claim.uid,
-#                 text=claim.text,
-#                 label=claim.label,
-#             )
-#         )
-#     arguments = aea.reasons if aea.reasons else []
-#     if aea.objections:
-#         arguments += aea.objections
-#     if aea.rebuttals:
-#         arguments += aea.rebuttals
-#     for argument in arguments:
-#         nodelist.append(
-#             logikon_client.ArgMapNode(
-#                 id=argument.uid,
-#                 text=argument.text,
-#                 label=argument.label,
-#                 annotation_references=[
-#                     logikon_client.ArgMapNodeAnnotationReferences(
-#                         text_content_id=ref, start=0,end=-1)
-#                     for ref in argument.essay_text_refs
-#                 ]
-#             )
-#         )
-#         edgelist.append(
-#             logikon_client.ArgMapEdgelist(
-#                 source=argument.uid,
-#                 target=argument.parent_uid,
-#                 valence="pro" if argument in aea.reasons else "con",
-#             )
-#         )
-# 
-#     argmap = logikon_client.ArgMap(
-#         nodelist = nodelist,
-#         edgelist = edgelist,
-#     )
-# 
-#     text_content_items = []
-#     for essay_element in aea.essay_content_items:
-#         text_content_items.append(
-#             logikon_client.TextContentItem(
-#                 id = essay_element.uid,
-#                 text = essay_element.text,
-#                 name = essay_element.label,
-#             )
-#         )
-#     body = logikon_client.ArgAnnotation(
-#         argmap = argmap,
-#         text_content_items = text_content_items,
-#     )
-#     precision = 'medium' 
-# 
-#     # Configure API key authorization: api_key
-#     configuration = logikon_client.Configuration()
-#     configuration.host = st.secrets["logikon_server"]["url"]
-#     configuration.api_key['X-Auth'] = st.secrets["logikon_server"]["token"]
-# 
-#     # ApiInstance
-#     api_instance = logikon_client.MetricsApi(logikon_client.ApiClient(configuration))
-# 
-#     try:
-#         # Assesses the plausibility of an argumentative text annotation applying diverse metrics
-#         api_response = api_instance.evaluate_arg_annotation(body=body, precision=precision)
-#     except ApiException as e:
-#         st.error("Exception when calling MetricsApi->evaluate_arg_annotation: %s\n" % e)
-#         api_response = {
-#             "error": str(e),
-#             "body": body,
-#         }
-# 
-#     st.info(body)
-#     st.info(type(api_response))
-# 
-#     return api_response
+    argmap = aea.as_api_argmap()
+    textContentItems = aea.as_api_textContentItems()
+
+    api_token = st.secrets["logikon_server"]["token"]
+    server_url = st.secrets["logikon_server"]["url"]
+    headers = {
+        "accept": "application/json",
+        "X-Auth": api_token,
+        "Content-Type": "application/json"
+    }
+    params = {
+        "precision": "medium",
+    }
+
+    def query(payload, api_path):
+        api_url = f"{server_url}/{api_path}"
+        data = json.dumps(payload)
+        response = requests.request(
+            "POST",
+            api_url,
+            headers=headers,
+            data=data,
+            params=params,
+        )
+        return json.loads(response.content.decode("utf-8"))
+    
+
+    status_report = st.empty()
+
+    with status_report.container():
+        st.info("Evaluating argument map (1/2) ...")
+        argmap_metrics = query(
+            argmap,
+            st.secrets["logikon_server"]["path_argmap"]
+        )
+        st.info("Evaluating essay annotation (2/2) ...")
+        annotation_metrics = query(
+            {
+                "argmap": argmap,
+                "textContentItems": textContentItems,
+            },
+            st.secrets["logikon_server"]["path_arganno"]
+        )
+
+    status_report.empty()
+
+
+    return dict(argmap_metrics=argmap_metrics, annotation_metrics=annotation_metrics)
+
