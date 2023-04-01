@@ -495,11 +495,13 @@ def display_evaluation_results(evaluation_results: Dict[str,Dict], aea: Argument
         return 0
     
     def inv_uncertainty_cat(numscore: float) -> str:
-        if numscore < 0.2:
+        if numscore < 0.1:
             uncertainty_cat = "very likely"
-        elif numscore < 0.5:
+        elif numscore < 0.33:
             uncertainty_cat = "likely"
-        elif numscore < 0.8:
+        elif numscore < 0.66:
+            uncertainty_cat = "about as likely as not"
+        elif numscore < 0.9:
             uncertainty_cat = "unlikely"
         else:
             uncertainty_cat = "very unlikely"
