@@ -80,19 +80,20 @@ class ArgumentativeEssayAnalysis:
         raise ValueError(f"Could not find essay_item with uid {uid}")
 
 
-    def as_api_argmap(self) -> Dict:
+    def as_api_argmap(self, reason_nodes_only: bool=False) -> Dict:
         nodelist = []
         edgelist = []
-        for claim in self.main_claims:
-            nodelist.append(
-                dict(
-                    id=claim.uid,
-                    text=claim.text,
-                    label=claim.label,
-                    nodeType="proposition",
-                    annotationReferences=[],
+        if not reason_nodes_only:
+            for claim in self.main_claims:
+                nodelist.append(
+                    dict(
+                        id=claim.uid,
+                        text=claim.text,
+                        label=claim.label,
+                        nodeType="proposition",
+                        annotationReferences=[],
+                    )
                 )
-            )
         arguments = self.reasons if self.reasons else []
         if self.objections:
             arguments += self.objections
@@ -111,13 +112,14 @@ class ArgumentativeEssayAnalysis:
                     ]
                 )
             )
-            edgelist.append(
-                dict(
-                    source=argument.uid,
-                    target=argument.parent_uid,
-                    valence="pro" if argument in self.reasons else "con",
+            if not reason_nodes_only:
+                edgelist.append(
+                    dict(
+                        source=argument.uid,
+                        target=argument.parent_uid,
+                        valence="pro" if argument in self.reasons else "con",
+                    )
                 )
-            )
 
         return dict(
             nodelist = nodelist,

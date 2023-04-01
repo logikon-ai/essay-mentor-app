@@ -72,9 +72,6 @@ def get_aea_evaluation(aea: ArgumentativeEssayAnalysis) -> Dict[str,Dict]:
         Tuple[Dict,Dict]: MetricsCollection for argument map, MetricsCollection for text annotation
     """
 
-    argmap = aea.as_api_argmap()
-    textContentItems = aea.as_api_textContentItems()
-
     api_token = st.secrets["logikon_server"]["token"]
     server_url = st.secrets["logikon_server"]["url"]
     headers = {
@@ -104,14 +101,14 @@ def get_aea_evaluation(aea: ArgumentativeEssayAnalysis) -> Dict[str,Dict]:
     with status_report.container():
         st.info("Evaluating argument map (1/2) ...")
         argmap_metrics = query(
-            argmap,
+            aea.as_api_argmap(),
             st.secrets["logikon_server"]["path_argmap"]
         )
         st.info("Evaluating essay annotation (2/2) ...")
         annotation_metrics = query(
             {
-                "argmap": argmap,
-                "textContentItems": textContentItems,
+                "argmap": aea.as_api_argmap(reason_nodes_only=True),
+                "textContentItems": aea.as_api_textContentItems(),
             },
             st.secrets["logikon_server"]["path_arganno"]
         )
