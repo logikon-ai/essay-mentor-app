@@ -94,7 +94,9 @@ class ArgumentativeEssayAnalysis:
                         annotationReferences=[],
                     )
                 )
-        arguments = self.reasons if self.reasons else []
+        arguments = []
+        if self.reasons:
+            arguments += self.reasons
         if self.objections:
             arguments += self.objections
         if self.rebuttals:
