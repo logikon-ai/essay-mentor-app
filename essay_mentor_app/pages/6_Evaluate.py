@@ -89,7 +89,14 @@ if st.session_state.has_been_submitted:
 
     if not "evaluation_result" in st.session_state:
         with st.spinner("Evaluating your essay ..."):
-            evaluation_result = backend.utils.get_aea_evaluation(aea)
+            try:
+                evaluation_result = backend.utils.get_aea_evaluation(aea)
+            except Exception as e:
+                st.error("Error while evaluating your essay. Please try again later. (%s)" % e)
+                st.stop()
+            if not evaluation_result or "error" in evaluation_result or "ERROR" in evaluation_result:
+                st.error("Error while evaluating your essay. Please try again later. (%s)" % evaluation_result)
+                st.stop()
             st.session_state["evaluation_result"] = evaluation_result
 
 

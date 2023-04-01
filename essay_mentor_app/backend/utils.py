@@ -15,6 +15,7 @@ from essay_mentor_app.backend.aea_datamodel import (
     Reason,
 )
 
+_REQUEST_TIMEOUT = 240
 
 def page_init(is_startpage=False):
     if not is_startpage:
@@ -80,7 +81,7 @@ def get_aea_evaluation(aea: ArgumentativeEssayAnalysis) -> Dict[str,Dict]:
         "Content-Type": "application/json"
     }
     params = {
-        "precision": "medium",
+        "precision": "high",
     }
 
     def query(payload, api_path):
@@ -92,6 +93,7 @@ def get_aea_evaluation(aea: ArgumentativeEssayAnalysis) -> Dict[str,Dict]:
             headers=headers,
             data=data,
             params=params,
+            timeout=_REQUEST_TIMEOUT,
         )
         return json.loads(response.content.decode("utf-8"))
     
