@@ -60,7 +60,7 @@ reasons, _ = components.input_reasons(
     "Animals have feelings and can suffer, especially when they are "
     "farmed and slaughtered.\n\n"
     "Animal farming creates a lot of joy and happiness: For farmers, "
-    "children, and least but not least for the happy animals "
+    "children, and last but not least for the happy animals "
     "themselves." if st.session_state.DEBUG else ""
 )
 
