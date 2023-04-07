@@ -38,6 +38,131 @@ def main():
         st.session_state["aea"] = ArgumentativeEssayAnalysis()
     aea:ArgumentativeEssayAnalysis = st.session_state.aea
 
+
+    #########
+    # test section #
+
+    import plotly.graph_objects as go
+    import matplotlib
+
+    cmap = matplotlib.cm.get_cmap('RdYlGn')
+
+    test_num = st.slider('test', min_value=0, max_value=100, value=50, step=1)
+
+    rgba = cmap(test_num/100.0)
+    
+    col1, col2 = st.columns(2)
+
+    fig = go.Figure(go.Indicator(
+        mode = "gauge+number",
+        value = test_num,
+        domain = {'x': [0, 1], 'y': [0, 1]},
+        #title = {'text': "plausible", 'font': {'size': 18}},
+        #delta = {"prefix": "plausible", "reference": 50, "relative": True, "valueformat":"0d"},
+        number = {
+            'font': {'size': 24},
+            'prefix': 'plausible (',
+            'suffix': ')',
+        },
+        gauge = {
+            'axis': {
+                'range': [None, 100.],
+                'tick0': 100/7,
+                'dtick': 100/7,
+                'showticklabels': False,
+                'tickwidth': 1,
+                'tickcolor': "darkblue",
+            },
+            'bar': {'color': f'rgba{rgba}'},
+            'bgcolor': "white",
+            'borderwidth': 2,
+            'bordercolor': "gray",
+            #'steps': [
+            #    {'range': [0, 50], 'color': 'cyan'},
+            #    {'range': [5, 70], 'color': 'royalblue'}],
+            'threshold': {
+                'line': {'color': "black", 'width': 4},
+                'thickness': 0.75,
+                'value': test_num}
+            }
+        ))
+    fig.update_layout(
+        width=300,
+        height=150,
+        margin=dict(l=20, r=20, t=1, b=1),
+    )
+    with col1:
+        st.markdown("Overall quality of the **argumentative analysis**:")
+        st.plotly_chart(fig, use_container_width=True)
+    with col2:
+        st.markdown("Overall quality of the **essay annotation**:")
+        st.plotly_chart(fig, use_container_width=True)
+
+
+    with st.expander("Detailed score [PrArg2]"):
+        col1, col2 = st.columns([2,1])
+        with col1:
+            st.markdown("Argumentative relation of [PrArg2] to further arguments:")
+        with col2:
+            fig2 = go.Figure(
+                go.Indicator(
+                    mode = "number+gauge",
+                    value = test_num,
+                    gauge = {
+                        'bar': {'color': f'rgba{rgba}','thickness': 0.6},
+                        'shape': "bullet",
+                        'axis' : {'range': [None, 100.],'visible': False}
+                    },
+                    domain = {'x': [0, 1], 'y': [0, 1]}
+                )
+            )
+            fig2.update_layout(
+                width=300,
+                height=25,
+                margin=dict(l=10, r=10, t=1, b=1),
+            )
+            st.plotly_chart(fig2, use_container_width=True)
+
+        summary = f"It is <b>very likely</b> that [PrArg1] is related to further arguments in another way than specified by the author (i.e., not as pro reason for [xxx]). Most plausible alternatives:"
+        details = f"<ol><li>Pro reason for [Obj2] (23%)</li><li>Con reason against [Claim1] (12%)</li><li>Pro reason for [Rbt3] (11%)</li></ol>"
+        st.markdown(
+            f"<p>{summary}</p><p>{details}</p>",
+            unsafe_allow_html=True
+        )
+
+        col1, col2 = st.columns([2,1])
+        with col1:
+            st.markdown("Linkage of [PrArg2] to paragraphs in the text (annotation):")
+        with col2:
+            fig2 = go.Figure(
+                go.Indicator(
+                    mode = "number+gauge",
+                    value = test_num,
+                    gauge = {
+                        'bar': {'color': f'rgba{rgba}','thickness': 0.6},
+                        'shape': "bullet",
+                        'axis' : {'range': [None, 100.],'visible': False}
+                    },
+                    domain = {'x': [0, 1], 'y': [0, 1]}
+                )
+            )
+            fig2.update_layout(
+                width=300,
+                height=25,
+                margin=dict(l=10, r=10, t=1, b=1),
+            )
+            st.plotly_chart(fig2, use_container_width=True)
+        summary = f"It is <b>unlikely</b> that [PrArg1] appears in the essay at different places than specified by the author (i.e., ¶XXX). Most plausible alternatives:"
+        details = f"<ol><li>Discussed in ¶002 (15%)</li><li>Not discussed in ¶003 (12%)</li><li>Discussed in ¶001 (4%)</li></ol>"
+        st.markdown(
+            f"<p>{summary}</p><p>{details}</p>",
+            unsafe_allow_html=True
+        )
+
+    #########
+
+
+
     if not "has_been_submitted" in st.session_state:
         st.session_state["has_been_submitted"] = False        
 
