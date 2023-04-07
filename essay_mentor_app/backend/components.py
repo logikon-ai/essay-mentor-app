@@ -436,9 +436,9 @@ def eval_scores_table(data: Dict[str,int]) -> str:
 
     def emoji(score: int) -> str:
         if score == 0:
-            return "😩"
-        elif score == 1:
             return "😟"
+        elif score == 1:
+            return "😕"
         elif score == 2:
             return "😐"
         elif score == 3:
@@ -484,13 +484,13 @@ def display_evaluation_results(evaluation_results: Dict[str,Dict], aea: Argument
             return None
         if isinstance(score, str):
             return EVAL_CATEGORIES.index(score)
-        if score > 0.8:
+        if score > 0.9:
             return 4
-        if score > 0.55:
+        if score > 0.66:
             return 3
-        if score > 0.45:
+        if score > 0.33:
             return 2
-        if score > 0.2:
+        if score > 0.1:
             return 1
         return 0
     
@@ -512,19 +512,40 @@ def display_evaluation_results(evaluation_results: Dict[str,Dict], aea: Argument
         target = None if target == "None" else target
         valence = alt_info["alternative"]["edgelist"][0].get("valence")
         probability = alt_info.get("probability")
+        probability = f"{probability*100:.0f}%" if probability is not None else "N.A."
         if target is None:
             return f"<li>Root claim ({probability*100:.0f}%)</li>"
         if valence == "pro":
-            return f"<li>Pro reason for [{aea.get_map_node_by_uid(target).label}] ({probability*100:.0f}%)</li>"
+            return f"<li>Pro reason for [{aea.get_map_node_by_uid(target).label}] ({probability})</li>"
         if valence == "con":
-            return f"<li>Con reason against [{aea.get_map_node_by_uid(target).label}] ({probability*100:.0f}%)</li>"
+            return f"<li>Con reason against [{aea.get_map_node_by_uid(target).label}] ({probability})</li>"
         return "<li>Unspecified alternative</li>"
 
     def format_anno_alt(alt_info:Dict) -> str:
-        return "<li>formatted alternative</li>"
+        probability = alt_info.get("probability")
+        probability = f"{probability*100:.0f}%" if probability is not None else "N.A."
+        text_content_items = alt_info["alternative"].get("textContentItems",None)
+        if text_content_items:
+            txt_id = text_content_items[0].get('id','')
+            if txt_id:
+                essay_item = aea.get_essay_item_by_uid(txt_id)
+                return f"<li>Not discussed in {essay_item.formatted_label()} ({probability})</li>"
+        else:
+            txt_id = alt_info["alternative"].get(
+                "argmap",{}).get(
+                "nodelist",[{}])[0].get(
+                "annotationReferences",[{}])[0].get(
+                "textContentId","")
+            if txt_id:
+                essay_item = aea.get_essay_item_by_uid(txt_id)
+                return f"<li>Discussed in {essay_item.formatted_label()} ({probability})</li>"
+
+        return "<li>Unspecified alternative</li>"
 
 
-    st.caption("😩 erroneous, 😟 implausible, 😐 arbitrary, 😊 plausible, 😄 compelling")
+
+
+    st.caption("😟 erroneous, 😕 implausible, 😐 arbitrary, 😊 plausible, 😄 compelling")
     st.markdown("### Overall score")
     st.markdown(
         eval_scores_table({
@@ -591,7 +612,9 @@ def display_evaluation_results(evaluation_results: Dict[str,Dict], aea: Argument
             numscore = anno_mtr["score"].get("numericalScore")
             if numscore is not None:
                 summary = f"It is <b>{inv_uncertainty_cat(numscore)}</b> that [{argument.label}] appears in the essay at different places than specified by the author. Most plausible alternatives:"
-                details = ""
+                alternatives = [format_anno_alt(x) for x in anno_mtr["topAlternatives"]]
+                alternatives = "".join(alternatives)
+                details = f"<ol>{alternatives}</ol>"
                 st.markdown(
                     f"<p>{summary}</p><p>{details}</p>",
                     unsafe_allow_html=True

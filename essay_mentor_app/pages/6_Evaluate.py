@@ -111,17 +111,17 @@ if st.session_state.has_been_submitted:
 
     components.display_evaluation_results(st.session_state.evaluation_result, aea)
 
-    st.caption("😩 erroneous, 😟 implausible, 😐 arbitrary, 😊 plausible, 😄 compelling")
-    st.markdown("### Overall score")
-    st.markdown(
-        components.eval_scores_table({
-            "Argumentative analysis (reason hierarchy)": 2,
-            "Linkage of arguments to text (essay annotation)": 3,
-        }),
-        unsafe_allow_html=True
-    )
-    st.markdown("### Individual scores per argument")
-    components.dummy_show_detailed_scores(aea)
+    # st.caption("😩 erroneous, 😟 implausible, 😐 arbitrary, 😊 plausible, 😄 compelling")
+    # st.markdown("### Overall score")
+    # st.markdown(
+    #     components.eval_scores_table({
+    #         "Argumentative analysis (reason hierarchy)": 2,
+    #         "Linkage of arguments to text (essay annotation)": 3,
+    #     }),
+    #     unsafe_allow_html=True
+    # )
+    # st.markdown("### Individual scores per argument")
+    # components.dummy_show_detailed_scores(aea)
 
     st.markdown("------")
 
