@@ -49,9 +49,9 @@ def main():
 
     test_num = st.slider('test', min_value=0, max_value=100, value=50, step=1)
 
+    cmap = matplotlib.cm.get_cmap('RdYlGn')
     rgba = cmap(test_num/100.0)
     
-    col1, col2 = st.columns(2)
 
     fig = go.Figure(go.Indicator(
         mode = "gauge+number",
@@ -91,12 +91,51 @@ def main():
         height=150,
         margin=dict(l=20, r=20, t=1, b=1),
     )
+    fig3 = go.Figure(go.Indicator(
+        mode = "gauge+number",
+        value = 0,
+        domain = {'x': [0, 1], 'y': [0, 1]},
+        #title = {'text': "plausible", 'font': {'size': 18}},
+        #delta = {"prefix": "plausible", "reference": 50, "relative": True, "valueformat":"0d"},
+        number = {
+            'font': {'size': 24},
+            'prefix': 'arbitrary (',
+            'suffix': ')',
+        },
+        gauge = {
+            'axis': {
+                'range': [None, 100.],
+                'tick0': 100/7,
+                'dtick': 100/7,
+                'showticklabels': False,
+                'tickwidth': 1,
+                'tickcolor': "darkblue",
+            },
+            'bar': {'color': 'white'},
+            'bgcolor': "lightgray",
+            'borderwidth': 2,
+            'bordercolor': "gray",
+            #'steps': [
+            #    {'range': [0, 50], 'color': 'cyan'},
+            #    {'range': [5, 70], 'color': 'royalblue'}],
+            #'threshold': {
+            #    'line': {'color': "black", 'width': 4},
+            #    'thickness': 0.75,
+            #    'value': test_num}
+            }
+        ))
+    fig3.update_layout(
+        width=300,
+        height=150,
+        margin=dict(l=20, r=20, t=1, b=1),
+    )    
+    col1, col2 = st.columns(2)
     with col1:
         st.markdown("Overall quality of the **argumentative analysis**:")
         st.plotly_chart(fig, use_container_width=True)
     with col2:
         st.markdown("Overall quality of the **essay annotation**:")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig3, use_container_width=True)
 
 
     with st.expander("Detailed score [PrArg2]"):
@@ -107,8 +146,9 @@ def main():
             fig2 = go.Figure(
                 go.Indicator(
                     mode = "number+gauge",
-                    value = test_num,
+                    value = None, #test_num,
                     gauge = {
+                        'bgcolor': 'lightgray',
                         'bar': {'color': f'rgba{rgba}','thickness': 0.6},
                         'shape': "bullet",
                         'axis' : {'range': [None, 100.],'visible': False}
@@ -126,7 +166,7 @@ def main():
         summary = f"It is <b>very likely</b> that [PrArg1] is related to further arguments in another way than specified by the author (i.e., not as pro reason for [xxx]). Most plausible alternatives:"
         details = f"<ol><li>Pro reason for [Obj2] (23%)</li><li>Con reason against [Claim1] (12%)</li><li>Pro reason for [Rbt3] (11%)</li></ol>"
         st.markdown(
-            f"<p>{summary}</p><p>{details}</p>",
+            f"<p><details><summary>{summary}</summary><p>{details}</details></p>",
             unsafe_allow_html=True
         )
 

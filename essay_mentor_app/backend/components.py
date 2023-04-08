@@ -3,6 +3,7 @@
 from typing import List, Tuple, Union, Optional, Dict
 
 import graphviz
+import matplotlib
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
@@ -477,22 +478,7 @@ def display_evaluation_results(evaluation_results: Dict[str,Dict], aea: Argument
     argmap_metrics = evaluation_results.get("argmap_metrics")
     annotation_metrics = evaluation_results.get("annotation_metrics")
 
-    # helper function
-    def num_score(score:Optional[Union[str,float]]) -> Optional[int]:
-        EVAL_CATEGORIES = ["erroneous", "implausible", "arbitrary", "plausible", "compelling"]
-        if score is None:
-            return None
-        if isinstance(score, str):
-            return EVAL_CATEGORIES.index(score)
-        if score > 0.9:
-            return 4
-        if score > 0.66:
-            return 3
-        if score > 0.33:
-            return 2
-        if score > 0.1:
-            return 1
-        return 0
+    # helper functions
     
     def inv_uncertainty_cat(numscore: float) -> str:
         if numscore < 0.1:
@@ -542,22 +528,104 @@ def display_evaluation_results(evaluation_results: Dict[str,Dict], aea: Argument
 
         return "<li>Unspecified alternative</li>"
 
+    def gauge_metric_figure(score: Union[float,int], label: str = "") -> go.Figure:
+        """plotly gauge indicator"""
+        cmap = matplotlib.cm.get_cmap('RdYlGn')
+        rgba = cmap(score/100.0)
+        gauge = {
+            'axis': {
+                'range': [None, 100.],
+                'tick0': 100/7,
+                'dtick': 100/7,
+                'showticklabels': False,
+                'tickwidth': 1,
+                'tickcolor': "darkgray",
+            },
+            'bar': {'color': f'rgba{rgba}'},
+            'bgcolor': "white",
+            'borderwidth': 2,
+            'bordercolor': "gray",
+            'threshold': {
+                'line': {'color': "black", 'width': 4},
+                'thickness': 0.75,
+                'value': score}
+            }
+        if label == "arbitrary":
+            score = 0
+            gauge.pop("threshold")
+            gauge["bgcolor"] = "lightgray"
+
+        fig = go.Figure(go.Indicator(
+            mode = "gauge+number",
+            value = score,
+            domain = {'x': [0, 1], 'y': [0, 1]},
+            number = {
+                'font': {'size': 24},
+                'prefix': f'{label} (',
+                'suffix': ')',
+            },
+            gauge = gauge
+            ))
+        fig.update_layout(
+            width=300,
+            height=150,
+            margin=dict(l=20, r=20, t=1, b=1),
+        )
+        return fig
 
 
+    def bar_metric_figure(score: Union[float,int], label:str = "") -> go.Figure:
+        """plotly bar indicator"""
+        cmap = matplotlib.cm.get_cmap('RdYlGn')
+        rgba = cmap(score/100.0)
+        gauge = {
+            'bar': {'color': f'rgba{rgba}','thickness': 0.6},
+            'shape': "bullet",
+            'axis' : {'range': [None, 100.],'visible': False}
+        }
+        if label == "arbitrary":
+            score = None
+            gauge["bgcolor"] = "lightgray"
+        fig = go.Figure(
+            go.Indicator(
+                mode = "number+gauge",
+                value = score,
+                gauge = gauge,
+                domain = {'x': [0, 1], 'y': [0, 1]}
+            )
+        )
+        fig.update_layout(
+            width=300,
+            height=25,
+            margin=dict(l=10, r=10, t=1, b=1),
+        )
+        return fig
 
-    st.caption("😟 erroneous, 😕 implausible, 😐 arbitrary, 😊 plausible, 😄 compelling")
-    st.markdown("### Overall score")
-    st.markdown(
-        eval_scores_table({
-            "Argumentative analysis (reason hierarchy)": num_score(argmap_metrics["globalScore"]["qualitativeScore"]),
-            "Linkage of arguments to text (essay annotation)": num_score(annotation_metrics["globalScore"]["qualitativeScore"]),
-        }),
-        unsafe_allow_html=True
-    )
+    # display overall scores
 
-    st.markdown("### Individual scores per argument")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown("Overall quality of the **argumentative analysis**:")
+        st.plotly_chart(
+            gauge_metric_figure(
+                argmap_metrics["globalScore"]["numericalScore"],
+                label = argmap_metrics["globalScore"]["qualitativeScore"]
+            ),
+            use_container_width=True
+        )
+    with col2:
+        st.markdown("Overall quality of the **essay annotation**:")
+        st.plotly_chart(
+            gauge_metric_figure(
+                annotation_metrics["globalScore"]["numericalScore"],
+                label = annotation_metrics["globalScore"]["qualitativeScore"]
+            ),
+            use_container_width=True
+        )
 
-    # list of all arguments
+
+    # display individual scores for each arguments
+
     arguments: List[Reason] = []
     if aea.reasons:
         arguments += aea.reasons
@@ -567,38 +635,33 @@ def display_evaluation_results(evaluation_results: Dict[str,Dict], aea: Argument
         arguments += aea.rebuttals
 
     for argument in arguments:
-        st.write(" ")
-        st.write(f"###### [{argument.label}]: {argument.text}")
-        annorefs = ", ".join([
-            f"{aea.get_essay_item_by_uid(uid).formatted_label()}"
-            for uid in argument.essay_text_refs
-        ])
-        st.caption(f"Linked to paragraphs: {annorefs}")
 
-        anno_mtr = next(x for x in annotation_metrics["individualScores"] if x["idRef"]==argument.uid)
-        argm_mtr = next(x for x in argmap_metrics["individualScores"] if x["idRef"]==argument.uid)
+        arg_argm_mtr = next(x for x in argmap_metrics["individualScores"] if x["idRef"]==argument.uid)
+        arg_anno_mtr = next(x for x in annotation_metrics["individualScores"] if x["idRef"]==argument.uid)
 
-        qual_argm_score = argm_mtr["score"].get("qualitativeScore")
-        if qual_argm_score is None:
-            qual_argm_score = argm_mtr["score"].get("numericalScore")
+        with st.expander(f"Detailed score [{argument.label}]"):
 
-        scores = {
-            f"Argumentative relation of [{argument.label}] to further arguments": (
-                num_score(qual_argm_score)
-            ),
-            f"Link of [{argument.label}] to paragraphs in the essay": (
-                num_score(anno_mtr["score"]["qualitativeScore"])
-            ),
-        }
-        st.markdown(
-            eval_scores_table(scores),
-            unsafe_allow_html=True
-        )
+            annorefs = ", ".join([
+                f"{aea.get_essay_item_by_uid(uid).formatted_label()}"
+                for uid in argument.essay_text_refs
+            ])
+            st.caption(f"[{argument.label}]: {argument.text} (Linked to paragraphs: {annorefs})")
 
-        explanation = st.expander("More details and explanation...", expanded=False)
-        with explanation:
-            # argument map
-            numscore = argm_mtr["score"].get("numericalScore")
+            # Argumentative embedding score of argument
+
+            col1, col2 = st.columns([2,1])
+            with col1:
+                st.markdown(f"Argumentative relation of [{argument.label}] to further arguments:")
+            with col2:
+                st.plotly_chart(
+                    bar_metric_figure(
+                        arg_argm_mtr["score"].get("numericalScore"),
+                        label = arg_argm_mtr["score"]["qualitativeScore"]
+                    ),
+                    use_container_width=True
+                )
+
+            numscore = arg_argm_mtr["score"].get("numericalScore")
             if numscore is not None:
                 summary = f"It is <b>{inv_uncertainty_cat(numscore)}</b> that [{argument.label}] is related to further arguments in another way than specified by the author (i.e., not as pro reason for [{aea.get_map_node_by_uid(argument.parent_uid).label}]). Most plausible alternatives:"
                 alternatives = [format_argm_alt(x) for x in argm_mtr["topAlternatives"]]
@@ -608,8 +671,22 @@ def display_evaluation_results(evaluation_results: Dict[str,Dict], aea: Argument
                     f"<p>{summary}</p><p>{details}</p>",
                     unsafe_allow_html=True
                 )
-            # text annotation
-            numscore = anno_mtr["score"].get("numericalScore")
+
+            # Annotation score of argument
+
+            col1, col2 = st.columns([2,1])
+            with col1:
+                st.markdown("Linkage of [{argument.label}] to paragraphs in the text (annotation):")
+            with col2:
+                st.plotly_chart(
+                    bar_metric_figure(
+                        arg_anno_mtr["score"].get("numericalScore"),
+                        label = arg_anno_mtr["score"]["qualitativeScore"]
+                    ),
+                    use_container_width=True
+                )
+
+            numscore = arg_anno_mtr["score"].get("numericalScore")
             if numscore is not None:
                 summary = f"It is <b>{inv_uncertainty_cat(numscore)}</b> that [{argument.label}] appears in the essay at different places than specified by the author. Most plausible alternatives:"
                 alternatives = [format_anno_alt(x) for x in anno_mtr["topAlternatives"]]
