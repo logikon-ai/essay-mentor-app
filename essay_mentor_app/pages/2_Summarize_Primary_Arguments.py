@@ -1,12 +1,10 @@
-# page 2: Sumarize your arguments
-
-from typing import List
+# page 2: Summarize your arguments
 
 import streamlit as st
 from streamlit_extras.switch_page_button import switch_page
 
-from essay_mentor_app.backend.aea_datamodel import ArgumentativeEssayAnalysis
-import essay_mentor_app.backend.components as components
+from backend.aea_datamodel import ArgumentativeEssayAnalysis
+import backend.components as components
 import backend.utils
 
 
@@ -29,9 +27,16 @@ if not aea.main_claims:
 
 if aea.reasons:
     st.write("#### Your primary arguments:")
-    components.display_reasons(aea.reasons, aea.main_claims, parent_name="claim", reason_name="primary argument")
+    components.display_reasons(
+        aea.reasons,
+        aea.main_claims,
+        parent_name="claim",
+        reason_name="primary argument",
+    )
 
-    if st.button("Revise primary arguments", disabled=st.session_state.has_been_submitted):
+    if st.button(
+        "Revise primary arguments", disabled=st.session_state.has_been_submitted
+    ):
         backend.utils.clear_associated_keys(aea.objections)
         aea.objections = []
         backend.utils.clear_associated_keys(aea.rebuttals)
@@ -40,15 +45,14 @@ if aea.reasons:
         aea.reasons = []
         st.experimental_rerun()
     if aea.objections:
-        st.caption("(Revision will delete any data that has been entered on pages hereafter.)")
+        st.caption(
+            "(Revision will delete any data that has been entered on pages hereafter.)"
+        )
 
     if aea.reasons:
         st.stop()
 
-st.info(
-    "What are your arguments for each central claim?",
-    icon="❔"
-)
+st.info("What are your arguments for each central claim?", icon="❔")
 
 reasons, _ = components.input_reasons(
     parent_list=aea.main_claims,
@@ -61,11 +65,11 @@ reasons, _ = components.input_reasons(
     "farmed and slaughtered.\n\n"
     "Animal farming creates a lot of joy and happiness: For farmers, "
     "children, and last but not least for the happy animals "
-    "themselves." if st.session_state.DEBUG else ""
+    "themselves."
+    if st.session_state.DEBUG
+    else "",
 )
 
 if reasons:
     aea.reasons = reasons
     switch_page("Summarize Objections")
-
-
