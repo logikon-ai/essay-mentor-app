@@ -459,14 +459,23 @@ def display_essay_annotation_figure(
     fig_trace = go.Parcats(
         dimensions=[paragraph_dim, reason_dim, rtype_dim],
         line={"color": color},
+        labelfont={'size': 16, 'family': 'Sans-Serif'},
+        tickfont={'size': 14, 'family': 'Sans-Serif'},
         hoveron="dimension",
         hoverinfo="count",
     )
     fig_data = [fig_trace]
 
-    st.plotly_chart(fig_data, use_container_width=False)
 
     fig = go.Figure(fig_data)
+    fig.update_layout(
+        width=700,
+        height=300,
+        margin=dict(l=20, r=20, t=1, b=1),
+    )
+
+    st.plotly_chart(fig, use_container_width=False)
+
     return fig
 
 

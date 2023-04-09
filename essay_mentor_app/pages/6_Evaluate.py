@@ -37,6 +37,12 @@ if not st.session_state.has_been_submitted:
         "Review the summary of your analysis and annotation before submitting it.",
         icon="💡",
     )
+elif st.session_state.get("evaluation_result"):
+    st.success(
+        "Evaluation completed. Find the results below.",
+        icon="✅",
+    )
+
 
 st.markdown("### Reason hierarchy")
 st.caption("Arguments, objections, rebuttals as summarized before:")
