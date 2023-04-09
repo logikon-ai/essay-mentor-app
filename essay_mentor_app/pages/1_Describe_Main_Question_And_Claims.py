@@ -20,7 +20,6 @@ import backend.utils
 backend.utils.page_init()
 aea: ArgumentativeEssayAnalysis = st.session_state.aea
 
-
 # main page
 
 components.display_submit_notice(st.session_state.has_been_submitted)
@@ -40,7 +39,9 @@ if aea.main_questions or aea.main_claims:
     for claim in aea.main_claims:
         st.write(f"* **\[{claim.label}\]**: {claim.text}")
 
-    if st.button("Revise main question or claims", disabled=st.session_state.has_been_submitted):
+    if st.button(
+        "Revise main question or claims", disabled=st.session_state.has_been_submitted
+    ):
         backend.utils.clear_associated_keys(aea.objections)
         aea.objections = []
         backend.utils.clear_associated_keys(aea.rebuttals)
@@ -51,17 +52,15 @@ if aea.main_questions or aea.main_claims:
         aea.main_claims = []
         st.experimental_rerun()
     if aea.reasons:
-        st.caption("(Revision will delete any data that has been entered on pages hereafter.)")
-
+        st.caption(
+            "(Revision will delete any data that has been entered on pages hereafter.)"
+        )
 
     if aea.main_questions or aea.main_claims:
         st.stop()
 
 
-st.info(
-    "What is your essay all about?",
-    icon="❔"
-)
+st.info("What is your essay all about?", icon="❔")
 st.caption(
     "Below, enter the main question you address in the essay. "
     "Summarize the answers you discuss in the form of central claims. "
@@ -74,7 +73,9 @@ main_question_txt = st.text_area(
     height=30,
     key="main_question",
     value="""Is it ok to eat animals?     
-    """if st.session_state.DEBUG else ""
+    """
+    if st.session_state.DEBUG
+    else "",
 )
 
 main_claims_txt = st.text_area(
@@ -82,31 +83,24 @@ main_claims_txt = st.text_area(
     height=200,
     key="central_claims",
     value="""It is categorically wrong to eat animals today.
-    """ if st.session_state.DEBUG else ""
+    """
+    if st.session_state.DEBUG
+    else "",
 )
-
-
-# dummy siedbar info:
-#i=0.2
-#status_text.text("%i%% Complete" % i)
-#progress_bar.progress(i)
 
 if main_question_txt and main_claims_txt:
     n_claims = len([x for x in main_claims_txt.splitlines() if x])
-    st.success(
-        str(f"Main question and {n_claims} central claim(s) recognized.")
-    )
+    st.success(str(f"Main question and {n_claims} central claim(s) recognized."))
 elif not main_question_txt:
     st.warning("Main question is missing.")
 elif not main_claims_txt:
     st.warning("Central claims are missing.")
 
-
 if st.button(
     "Use this input and proceed with next step",
-    disabled=not(main_question_txt and main_claims_txt) or st.session_state.has_been_submitted
+    disabled=not (main_question_txt and main_claims_txt)
+    or st.session_state.has_been_submitted,
 ):
-
     main_question = MainQuestion(
         text=main_question_txt,
     )
@@ -128,14 +122,3 @@ if st.button(
     aea.main_questions = [main_question]
     aea.main_claims = main_claims
     switch_page("Summarize Primary Arguments")
-
-
-
-#st.write("-------")
-
-#with st.expander("Debugging"):
-#    aea: ArgumentativeEssayAnalysis = st.session_state.aea
-#    if aea.main_questions:
-#        st.json(aea.main_questions[0].__dict__)
-#    for claim in aea.main_claims:
-#        st.json(claim.__dict__)
