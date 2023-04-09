@@ -1,18 +1,17 @@
-# page 3
+# page 5: Argumentative essay annotation
 
 import streamlit as st
 from streamlit_extras.switch_page_button import switch_page
 
-from essay_mentor_app.backend.aea_datamodel import ArgumentativeEssayAnalysis
-import essay_mentor_app.backend.components as components
+from backend.aea_datamodel import ArgumentativeEssayAnalysis
+import backend.components as components
 import backend.utils
 
 
 # init
 
 backend.utils.page_init()
-aea:ArgumentativeEssayAnalysis = st.session_state.aea
-
+aea: ArgumentativeEssayAnalysis = st.session_state.aea
 
 # main
 
@@ -30,7 +29,7 @@ if not aea.reasons:
 if not st.session_state.has_been_submitted:
     st.info(
         "Where, in your essay, do you present the arguments summarized so far?",
-        icon="❔"
+        icon="❔",
     )
 
 with st.expander(
@@ -59,10 +58,11 @@ reason_assignments = components.display_essay(
 if reason_assignments:
     if st.button(
         "Use these annotations and proceed with preview",
-        disabled=not(any(reason_assignments.values())) or st.session_state.has_been_submitted,
+        disabled=not (any(reason_assignments.values()))
+        or st.session_state.has_been_submitted,
     ):
         # clear all previous assigments
-        for reason in aea.reasons+aea.objections+aea.rebuttals:
+        for reason in aea.reasons + aea.objections + aea.rebuttals:
             reason.essay_text_refs = []
         # assign new labels
         for essay_text_uid, uids in reason_assignments.items():
@@ -70,9 +70,3 @@ if reason_assignments:
                 reason = aea.get_reason_by_uid(reason_uid)
                 reason.essay_text_refs.append(essay_text_uid)
         switch_page("Evaluate")
-
-# Debugging:
-#st.json(reason_assignments)
-
-
-
