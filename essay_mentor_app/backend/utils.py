@@ -19,7 +19,7 @@ _REQUEST_TIMEOUT = 240
 
 def page_init(is_startpage=False):
     if not is_startpage:
-        st.session_state.update(st.session_state)
+        st.session_state.update(st.session_state)  # for multi-page state preservation
     st.set_page_config(
         page_title="Tessy - Essay Tutor",
         page_icon="👩‍🏫",
