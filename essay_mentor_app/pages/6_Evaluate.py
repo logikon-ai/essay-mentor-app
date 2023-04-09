@@ -1,25 +1,27 @@
-# page 6
+# page 6: Essay evaluation
 
 import jinja2
 import pdfkit
 import streamlit as st
 
-from essay_mentor_app.backend.aea_datamodel import ArgumentativeEssayAnalysis
-import essay_mentor_app.backend.components as components
+from backend.aea_datamodel import ArgumentativeEssayAnalysis
+import backend.components as components
 import backend.utils
 import backend.templates
 
 ANNOTATION_FIGURE_PATH = "essay_annotation_figure.svg"
 
+
 # init
 
 backend.utils.page_init()
-aea:ArgumentativeEssayAnalysis = st.session_state.aea
-
+aea: ArgumentativeEssayAnalysis = st.session_state.aea
 
 # main
 
-if not aea.reasons or not any(r.essay_text_refs for r in aea.reasons+aea.objections+aea.rebuttals):
+if not aea.reasons or not any(
+    r.essay_text_refs for r in aea.reasons + aea.objections + aea.rebuttals
+):
     st.write(
         "In order to evaluate the essay, "
         "you need to detail your primary arguments "
@@ -29,12 +31,11 @@ if not aea.reasons or not any(r.essay_text_refs for r in aea.reasons+aea.objecti
     )
     st.stop()
 
-
 # info with lightbulb icon
 if not st.session_state.has_been_submitted:
     st.info(
         "Review the summary of your analysis and annotation before submitting it.",
-        icon="💡"
+        icon="💡",
     )
 
 st.markdown("### Reason hierarchy")
@@ -45,7 +46,7 @@ argmap_svg = components.display_argument_map(
     objections=aea.objections,
     rebuttals=aea.rebuttals,
 )
-#st.write(argmap_svg) # debugging
+# st.write(argmap_svg) # debugging
 with st.expander("Reason hierarchy as nested list"):
     components.display_reasons_hierarchy(
         claims=aea.main_claims,
@@ -64,8 +65,9 @@ components.display_essay_annotation_metrics(
     rebuttals=aea.rebuttals,
 )
 
-
-st.caption("Mapping of paragraphs in the essay (left column) to reasons (middle and right column):")
+st.caption(
+    "Mapping of paragraphs in the essay (left column) to reasons (middle and right column):"
+)
 fig = components.display_essay_annotation_figure(
     aea.essay_content_items,
     reasons=aea.reasons,
@@ -73,12 +75,14 @@ fig = components.display_essay_annotation_figure(
     rebuttals=aea.rebuttals,
 )
 
-fig.write_image(ANNOTATION_FIGURE_PATH)
-# st.image(ANNOTATION_FIGURE_PATH) # debugging
+fig.write_image(ANNOTATION_FIGURE_PATH)  # save figure for report
+# st.image(ANNOTATION_FIGURE_PATH)  # debugging
 
 
 def on_submit():
     st.session_state["has_been_submitted"] = True
+
+
 submit = st.button(
     "Submit for evaluation",
     disabled=st.session_state.has_been_submitted,
@@ -86,26 +90,36 @@ submit = st.button(
 )
 
 if st.session_state.has_been_submitted:
-
     if not "evaluation_result" in st.session_state:
         with st.spinner("Evaluating your essay ..."):
             try:
                 evaluation_result = backend.utils.get_aea_evaluation(aea)
             except Exception as e:
-                st.error("Error while evaluating your essay. Please try again later. (%s)" % e)
+                st.error(
+                    "Error while evaluating your essay. Please try again later. (%s)"
+                    % e
+                )
                 st.stop()
-            if not evaluation_result or "error" in evaluation_result or "ERROR" in evaluation_result:
-                st.error("Error while evaluating your essay. Please try again later. (%s)" % evaluation_result)
+            if (
+                not evaluation_result
+                or "error" in evaluation_result
+                or "ERROR" in evaluation_result
+            ):
+                st.error(
+                    "Error while evaluating your essay. Please try again later. (%s)"
+                    % evaluation_result
+                )
                 st.stop()
             st.session_state["evaluation_result"] = evaluation_result
 
-
     st.markdown("## Evaluation")
 
-    st.json({
-        "argmap": aea.as_api_argmap(),
-        "annotation": aea.as_api_textContentItems(),
-    })
+    st.json(
+        {
+            "argmap": aea.as_api_argmap(),
+            "annotation": aea.as_api_textContentItems(),
+        }
+    )
 
     st.json(st.session_state.evaluation_result)
 
@@ -131,13 +145,12 @@ if st.session_state.has_been_submitted:
     report_data = {
         "argmap_svg": argmap_svg,
         "annotation_svg": annotation_svg,
-        "reason_hierarchy": "JUST A TEST MAP"
+        "reason_hierarchy": "JUST A TEST MAP",
     }
     # load jinja template from backend.templates.REPORT_TEMPLATE
     template = jinja2.Template(backend.templates.REPORT_TEMPLATE)
     report_html = template.render(**report_data)
     # st.markdown(report_html, unsafe_allow_html=True) # debugging
-
 
     report_pdf = pdfkit.from_string(report_html, False)
     st.download_button(
