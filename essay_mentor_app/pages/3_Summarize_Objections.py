@@ -1,7 +1,5 @@
 # page 2: Sumarize your arguments
 
-from typing import List
-
 import streamlit as st
 from streamlit_extras.switch_page_button import switch_page
 
@@ -15,7 +13,6 @@ import backend.utils
 backend.utils.page_init()
 aea: ArgumentativeEssayAnalysis = st.session_state.aea
 
-
 # main page
 
 components.display_submit_notice(st.session_state.has_been_submitted)
@@ -28,10 +25,14 @@ if not aea.reasons:
     )
     st.stop()
 
-
 if aea.objections:
     st.write("#### Your objections:")
-    components.display_reasons(aea.objections, aea.reasons, parent_name="primary argument", reason_name="objection")
+    components.display_reasons(
+        aea.objections,
+        aea.reasons,
+        parent_name="primary argument",
+        reason_name="objection",
+    )
 
     if st.button("Revise objections", disabled=st.session_state.has_been_submitted):
         backend.utils.clear_associated_keys(aea.rebuttals)
@@ -40,7 +41,9 @@ if aea.objections:
         aea.objections = []
         st.experimental_rerun()
     if aea.rebuttals:
-        st.caption("(Revision will delete any data that has been entered on pages hereafter.)")
+        st.caption(
+            "(Revision will delete any data that has been entered on pages hereafter.)"
+        )
 
     if aea.objections:
         st.stop()
@@ -48,11 +51,11 @@ if aea.objections:
 if not st.session_state.has_been_submitted:
     st.info(
         "Which objections to each primary argument, or claim, do you discuss (if any)?",
-        icon="❔"
+        icon="❔",
     )
 
 objections, skip = components.input_reasons(
-    parent_list=aea.reasons+aea.main_claims,
+    parent_list=aea.reasons + aea.main_claims,
     parent_name="primary argument/claim",
     reason_name="objection",
     expanded_per_default=False,
@@ -63,10 +66,6 @@ objections, skip = components.input_reasons(
 if skip:
     switch_page("Connect Arguments To Text")
 
-
 if objections:
     aea.objections = objections
     switch_page("Summarize Rebuttals")
-
-#import dataclasses
-#st.json(dataclasses.asdict(aea))
