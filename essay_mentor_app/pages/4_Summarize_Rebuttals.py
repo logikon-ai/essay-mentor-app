@@ -1,4 +1,4 @@
-# page 4: Sumarize your rebuttals
+# page 4: Summarize your rebuttals
 
 import streamlit as st
 from streamlit_extras.switch_page_button import switch_page
@@ -13,7 +13,6 @@ import backend.utils
 backend.utils.page_init()
 aea: ArgumentativeEssayAnalysis = st.session_state.aea
 
-
 # main page
 
 components.display_submit_notice(st.session_state.has_been_submitted)
@@ -26,25 +25,25 @@ if not aea.objections:
     )
     st.stop()
 
-
 if aea.rebuttals:
     st.write("#### Your rebuttals:")
-    components.display_reasons(aea.rebuttals, aea.objections, parent_name="objection", reason_name="rebuttal")
+    components.display_reasons(
+        aea.rebuttals, aea.objections, parent_name="objection", reason_name="rebuttal"
+    )
 
     if st.button("Revise objections", disabled=st.session_state.has_been_submitted):
         backend.utils.clear_associated_keys(aea.rebuttals)
         aea.rebuttals = []
         st.experimental_rerun()
-    st.caption("(Revision will delete any data that has been entered on pages hereafter.)")
+    st.caption(
+        "(Revision will delete any data that has been entered on pages hereafter.)"
+    )
 
     if aea.rebuttals:
         st.stop()
 
 if not st.session_state.has_been_submitted:
-    st.info(
-        "Which rebuttals to each objection do you present (if any)?",
-        icon="❔"
-    )
+    st.info("Which rebuttals to each objection do you present (if any)?", icon="❔")
 
 rebuttals, skip = components.input_reasons(
     parent_list=aea.objections,
@@ -58,13 +57,6 @@ rebuttals, skip = components.input_reasons(
 if skip:
     switch_page("Connect Arguments To Text")
 
-
 if rebuttals:
     aea.rebuttals = rebuttals
     switch_page("Connect Arguments To Text")
-
-#import dataclasses
-#st.json(dataclasses.asdict(aea))
-
-
-
