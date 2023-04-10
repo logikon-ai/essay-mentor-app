@@ -471,7 +471,7 @@ def display_essay_annotation_figure(
     fig.update_layout(
         width=700,
         height=300,
-        margin=dict(l=20, r=20, t=1, b=1),
+        margin=dict(l=20, r=20, t=20, b=20),
     )
 
     st.plotly_chart(fig, use_container_width=False)
@@ -540,7 +540,7 @@ def display_evaluation_results(
     def gauge_metric_figure(score: Union[float, int], label: str = "") -> go.Figure:
         """plotly gauge indicator"""
         cmap = matplotlib.cm.get_cmap("RdYlGn")
-        rgba = cmap(score / 100.0)
+        rgba = cmap(score)
         gauge = {
             "axis": {
                 "range": [None, 100.0],
@@ -557,7 +557,7 @@ def display_evaluation_results(
             "threshold": {
                 "line": {"color": "black", "width": 4},
                 "thickness": 0.75,
-                "value": score,
+                "value": 100.0 * score,
             },
         }
         if label == "arbitrary":
@@ -568,7 +568,7 @@ def display_evaluation_results(
         fig = go.Figure(
             go.Indicator(
                 mode="gauge+number",
-                value=score,
+                value=100.0 * score,
                 domain={"x": [0, 1], "y": [0, 1]},
                 number={
                     "font": {"size": 24},
@@ -588,7 +588,7 @@ def display_evaluation_results(
     def bar_metric_figure(score: Union[float, int], label: str = "") -> go.Figure:
         """plotly bar indicator"""
         cmap = matplotlib.cm.get_cmap("RdYlGn")
-        rgba = cmap(score / 100.0)
+        rgba = cmap(score)
         gauge = {
             "bar": {"color": f"rgba{rgba}", "thickness": 0.6},
             "shape": "bullet",
@@ -600,7 +600,7 @@ def display_evaluation_results(
         fig = go.Figure(
             go.Indicator(
                 mode="number+gauge",
-                value=score,
+                value=100.0 * score if score is not None else None,
                 gauge=gauge,
                 domain={"x": [0, 1], "y": [0, 1]},
             )
