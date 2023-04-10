@@ -82,7 +82,7 @@ main_claims_txt = st.text_area(
     "Enter your central claim(s) here (separataed by empty lines)",
     height=200,
     key="central_claims",
-    value="""It is categorically wrong to eat animals today.
+    value="""It is categorically wrong to eat meat.
     """
     if st.session_state.DEBUG
     else "",
