@@ -248,17 +248,22 @@ def main():
                 st.session_state["essay_raw"] = backend.examples.EX2_VEGANISM_PAPERSOWL
             elif st.session_state.example_essay_id == "Example 3 (Critical Thinking)":
                 st.session_state["essay_raw"] = backend.examples.EX3_CRITTHINK
+            elif st.session_state.example_essay_id == "Example 4 (Debugging)":
+                st.session_state["essay_raw"] = backend.examples.EX4_DEBUGGING
             else:
                 st.session_state["essay_raw"] = st.session_state.example_essay_id
 
+        options = [
+            "",
+            "Example 1 (Racism)",
+            "Example 2 (Veganism)",
+            "Example 3 (Critical Thinking)",
+        ]
+        if st.session_state.get("DEBUG"):
+            options.append("Example 4 (Debugging)")
         st.selectbox(
             "... or select an example ...",
-            [
-                "",
-                "Example 1 (Racism)",
-                "Example 2 (Veganism)",
-                "Example 3 (Critical Thinking)",
-            ],
+            options,
             on_change=paste_example_essay,
             key="example_essay_id",
         )
