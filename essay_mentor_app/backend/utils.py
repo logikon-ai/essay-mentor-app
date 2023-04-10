@@ -81,7 +81,7 @@ def get_aea_evaluation(aea: ArgumentativeEssayAnalysis) -> Dict[str,Dict]:
         "Content-Type": "application/json"
     }
     params = {
-        "precision": "high",
+        "precision": "medium",
     }
 
     def query(payload, api_path):
