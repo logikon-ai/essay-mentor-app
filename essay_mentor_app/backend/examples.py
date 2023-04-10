@@ -60,3 +60,14 @@ Critical thinking is a tool for achieving independence as it helps to recognize 
 
 It can be concluded that because of the free access to social media, there exists lowquality content, including fake news and political bots. People create them with the aim ofmaking money through views and achieving ideological aims by reconstructing users’ onlineidentities. People need to acquire critical thinking skills for protecting themselves from thefalse agenda. This means they need to be skeptical and always strive to figure out what newsand users' profiles are real and what is fabricated. They can do it by checking facts andskipping the emotional component of the story. 
 """
+
+EX4_DEBUGGING: str = """# Eating Animals
+
+In this essay, I will ponder the question whether it's ok to eat animals. My ultimate answer is no.
+
+To begin with, and that is my first argument against eating animals, animal farming contributes to climate heating.
+
+Moreover, numerous studies have shown that animals have feelings and can suffer, especially when they are farmed and slaughtered.
+
+Finally, animal farming creates a lot of joy and happiness: For farmers, children, and last but not least for the happy animals themselves.
+"""
