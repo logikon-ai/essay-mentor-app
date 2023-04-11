@@ -128,16 +128,16 @@ class ArgumentativeEssayAnalysis:
             edgelist = edgelist,
         )
 
-
     def as_api_textContentItems(self) -> List[Dict]:
         text_content_items = []
         for essay_element in self.essay_content_items:
-            text_content_items.append(
-                dict(
-                    id = essay_element.uid,
-                    text = essay_element.text,
-                    name = essay_element.label,
+            if essay_element.heading_level == 0:
+                text_content_items.append(
+                    dict(
+                        id = essay_element.uid,
+                        text = essay_element.text,
+                        name = essay_element.label,
+                    )
                 )
-            )
         return text_content_items
 
