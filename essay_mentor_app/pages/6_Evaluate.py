@@ -97,6 +97,12 @@ submit = st.button(
 
 if st.session_state.has_been_submitted:
     if not "evaluation_result" in st.session_state:
+        st.json(
+            {
+                "submitted argmap": aea.as_api_argmap(),
+                "submitted text items": aea.as_api_textContentItems(),
+            }
+        )
         with st.spinner("Evaluating your essay ..."):
             try:
                 evaluation_result = backend.utils.get_aea_evaluation(aea)
@@ -107,9 +113,12 @@ if st.session_state.has_been_submitted:
                 )
                 st.stop()
             if (
-                not evaluation_result
-                or "error" in evaluation_result
-                or "ERROR" in evaluation_result
+                not evaluation_result.get("argmap_metrics")
+                or not evaluation_result.get("annotation_metrics")
+                or "error" in evaluation_result.get("argmap_metrics")
+                or "error" in evaluation_result.get("annotation_metrics")
+                or evaluation_result.get("argmap_metrics",{}).get("status", 200) != 200
+                or evaluation_result.get("annotation_metrics",{}).get("status", 200) != 200
             ):
                 st.error(
                     "Error while evaluating your essay. Please try again later. (%s)"
@@ -120,48 +129,30 @@ if st.session_state.has_been_submitted:
 
     st.markdown("## Evaluation")
 
-    st.json(
-        {
-            "argmap": aea.as_api_argmap(),
-            "annotation": aea.as_api_textContentItems(),
-        }
-    )
-
     st.json(st.session_state.evaluation_result)
 
     components.display_evaluation_results(st.session_state.evaluation_result, aea)
 
-    # st.caption("😩 erroneous, 😟 implausible, 😐 arbitrary, 😊 plausible, 😄 compelling")
-    # st.markdown("### Overall score")
-    # st.markdown(
-    #     components.eval_scores_table({
-    #         "Argumentative analysis (reason hierarchy)": 2,
-    #         "Linkage of arguments to text (essay annotation)": 3,
-    #     }),
-    #     unsafe_allow_html=True
-    # )
-    # st.markdown("### Individual scores per argument")
-    # components.dummy_show_detailed_scores(aea)
+    if False:
+        st.markdown("------")
 
-    st.markdown("------")
+        # read svg file
+        with open(ANNOTATION_FIGURE_PATH, "r") as f:
+            annotation_svg = f.read()
+        report_data = {
+            "argmap_svg": argmap_svg,
+            "annotation_svg": annotation_svg,
+            "reason_hierarchy": "JUST A TEST MAP",
+        }
+        # load jinja template from backend.templates.REPORT_TEMPLATE
+        template = jinja2.Template(backend.templates.REPORT_TEMPLATE)
+        report_html = template.render(**report_data)
+        # st.markdown(report_html, unsafe_allow_html=True) # debugging
 
-    # read svg file
-    with open(ANNOTATION_FIGURE_PATH, "r") as f:
-        annotation_svg = f.read()
-    report_data = {
-        "argmap_svg": argmap_svg,
-        "annotation_svg": annotation_svg,
-        "reason_hierarchy": "JUST A TEST MAP",
-    }
-    # load jinja template from backend.templates.REPORT_TEMPLATE
-    template = jinja2.Template(backend.templates.REPORT_TEMPLATE)
-    report_html = template.render(**report_data)
-    # st.markdown(report_html, unsafe_allow_html=True) # debugging
-
-    report_pdf = pdfkit.from_string(report_html, False)
-    st.download_button(
-        "⬇️ Download Report (PDF)",
-        data=report_pdf,
-        file_name="report.pdf",
-        mime="application/octet-stream",
-    )
+        report_pdf = pdfkit.from_string(report_html, False)
+        st.download_button(
+            "⬇️ Download Report (PDF)",
+            data=report_pdf,
+            file_name="report.pdf",
+            mime="application/octet-stream",
+        )
