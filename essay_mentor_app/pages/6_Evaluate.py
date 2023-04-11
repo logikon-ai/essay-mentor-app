@@ -81,7 +81,8 @@ fig = components.display_essay_annotation_figure(
     rebuttals=aea.rebuttals,
 )
 
-fig.write_image(ANNOTATION_FIGURE_PATH)  # save figure for report
+if False:
+    fig.write_image(ANNOTATION_FIGURE_PATH)  # save figure for report, uses kaleido
 # st.image(ANNOTATION_FIGURE_PATH)  # debugging
 
 
