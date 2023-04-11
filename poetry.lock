@@ -1814,21 +1814,6 @@ watchdog = {version = "*", markers = "platform_system != \"Darwin\""}
 snowflake = ["snowflake-snowpark-python"]
 
 [[package]]
-name = "streamlit-ace"
-version = "0.1.1"
-description = "Ace editor component for Streamlit."
-category = "main"
-optional = false
-python-versions = ">=3.6"
-files = [
-    {file = "streamlit_ace-0.1.1-py3-none-any.whl", hash = "sha256:cdf908a90058fa831fb720d29e2aef35a0f5799eac33e2b2e58ba9f3631b1aa5"},
-    {file = "streamlit_ace-0.1.1.tar.gz", hash = "sha256:1852fa19707685fd4241be9256c1ab1a89da4a3b8c28ab286e3bff122d3a1686"},
-]
-
-[package.dependencies]
-streamlit = ">=0.63"
-
-[[package]]
 name = "streamlit-camera-input-live"
 version = "0.2.0"
 description = "Alternative version of st.camera_input which returns the webcam images live, without any button press needed"
@@ -2192,4 +2177,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.9.7 || >3.9.7,<4.0"
-content-hash = "1926ecb9111100abba58c235cc1ab286fefa924f8d152c96e67cea50bbc568d0"
+content-hash = "5d739eb3ebf3c3672271d0327ee62bc8c573572e5650d2282b859ab9c33253d8"
