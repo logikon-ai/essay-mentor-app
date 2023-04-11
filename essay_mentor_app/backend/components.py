@@ -699,7 +699,7 @@ def display_evaluation_results(
             col1, col2 = st.columns([2, 1])
             with col1:
                 st.markdown(
-                    "Linkage of [{argument.label}] to paragraphs in the text (annotation):"
+                    f"Linkage of [{argument.label}] to paragraphs in the text (annotation):"
                 )
             with col2:
                 st.plotly_chart(
