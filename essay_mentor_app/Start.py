@@ -4,6 +4,7 @@ from io import StringIO
 import markdown
 import markdownify
 from PyPDF2 import PdfReader
+import requests
 
 import streamlit as st
 from streamlit_extras.switch_page_button import switch_page
@@ -27,19 +28,16 @@ def main():
     st.session_state["DEBUG"] = DEBUG
 
     if not st.session_state.get("logged_in"):
-        def login():
-            if st.session_state.get("password") == st.secrets["app_password"]:
-                import requests
-                page = requests.get(st.secrets["logikon_server"]["url"]+"/ui")
-                if page.status_code == 200:
-                    st.session_state["logged_in"] = True
-                    del st.session_state["password"]
-                else:
-                    st.error("Logikon server not reachable. Please try again later or contact Logikon staff.")
-            else:
-                st.error("Wrong password.")
-        st.text_input("Password", type="password", key="password", on_change=login)
-        st.stop()
+        try:
+            page = requests.get(st.secrets["logikon_server"]["url"]+"/ui")
+            status = page.status_code
+        except requests.exceptions.ConnectionError:
+            status = 500
+        if status == 200:
+            st.session_state["logged_in"] = True
+        else:
+            st.error("Logikon server not reachable. Please try again later or contact Logikon staff.", icon="🚨")
+            st.stop()
 
     if not "aea" in st.session_state:
         st.session_state["aea"] = ArgumentativeEssayAnalysis()
