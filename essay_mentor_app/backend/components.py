@@ -658,6 +658,8 @@ def display_evaluation_results(
             for x in annotation_metrics["individualScores"]
             if x["idRef"] == argument.uid
         )
+        
+        valence = "pro" if argument in aea.reasons else "con"
 
         with st.expander(f"Detailed score [{argument.label}]"):
             annorefs = ", ".join(
@@ -688,7 +690,8 @@ def display_evaluation_results(
 
             numscore = arg_argm_mtr["score"].get("numericalScore")
             if numscore is not None:
-                summary = f"It is <b>{inv_uncertainty_cat(numscore)}</b> that [{argument.label}] is related to further arguments in another way than specified by the author (i.e., not as pro reason for [{aea.get_map_node_by_uid(argument.parent_uid).label}]). Most plausible alternatives:"
+
+                summary = f"It is <b>{inv_uncertainty_cat(numscore)}</b> that [{argument.label}] is related to further arguments in another way than specified by the author (i.e., not as {valence} reason for [{aea.get_map_node_by_uid(argument.parent_uid).label}]). Most plausible alternatives:"
                 alternatives = [
                     format_argm_alt(x) for x in arg_argm_mtr["topAlternatives"]
                 ]
