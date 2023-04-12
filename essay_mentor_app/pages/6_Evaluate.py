@@ -130,7 +130,7 @@ if st.session_state.has_been_submitted:
 
     st.markdown("## Evaluation")
 
-    st.json(st.session_state.evaluation_result)
+    # st.json(st.session_state.evaluation_result)
 
     components.display_evaluation_results(st.session_state.evaluation_result, aea)
 
