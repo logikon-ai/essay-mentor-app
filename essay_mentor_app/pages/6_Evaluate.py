@@ -98,12 +98,12 @@ submit = st.button(
 
 if st.session_state.has_been_submitted:
     if not "evaluation_result" in st.session_state:
-        st.json(
-            {
-                "submitted argmap": aea.as_api_argmap(),
-                "submitted text items": aea.as_api_textContentItems(),
-            }
-        )
+        # st.json(
+        #     {
+        #         "submitted argmap": aea.as_api_argmap(),
+        #         "submitted text items": aea.as_api_textContentItems(),
+        #     }
+        # )
         with st.spinner("Evaluating your essay ..."):
             try:
                 evaluation_result = backend.utils.get_aea_evaluation(aea)
@@ -130,7 +130,7 @@ if st.session_state.has_been_submitted:
 
     st.markdown("## Evaluation")
 
-    st.json(st.session_state.evaluation_result)
+    # st.json(st.session_state.evaluation_result)
 
     components.display_evaluation_results(st.session_state.evaluation_result, aea)
 
