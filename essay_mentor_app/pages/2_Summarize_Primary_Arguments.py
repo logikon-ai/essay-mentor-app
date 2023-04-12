@@ -68,6 +68,10 @@ reasons, _ = components.input_reasons(
     "themselves. This joy wpould be gone if we didn't eat meat."
     if st.session_state.DEBUG
     else "",
+    help="*Example (two primary arguments for the claim that it is wrong to eat meat):*\n\n"
+    "Animal farming, and hence meat consumption, contributes to climate heating.\n\n"
+    "Animals have feelings and can suffer, especially when they are "
+    "farmed and slaughtered.\n\n"
 )
 
 if reasons:

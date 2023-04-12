@@ -227,6 +227,7 @@ def input_reasons(
     with_skip_button=False,
     has_been_submitted=False,
     default_value="",
+    help=None,
 ) -> Tuple[List[Reason], bool]:
     """dynamic input form for submitting reasons"""
     reasons_text_areas = []
@@ -245,6 +246,7 @@ def input_reasons(
                     height=120,
                     key=key,
                     disabled=has_been_submitted,
+                    help=help,
                 )
             )
 

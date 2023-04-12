@@ -76,16 +76,20 @@ main_question_txt = st.text_area(
     """
     if st.session_state.DEBUG
     else "",
+    help="*Example:*\n\n" \
+    "Is it ok to eat animals?"
 )
 
 main_claims_txt = st.text_area(
-    "Enter your central claim(s) here (separataed by empty lines)",
+    "Enter your central claim(s) here (separated by empty lines)",
     height=200,
     key="central_claims",
     value="""It is categorically wrong to eat meat.
     """
     if st.session_state.DEBUG
     else "",
+    help="*Example:*\n\n" \
+    "It is categorically wrong to eat meat."
 )
 
 if main_question_txt and main_claims_txt:
