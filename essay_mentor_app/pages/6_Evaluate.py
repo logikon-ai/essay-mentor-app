@@ -37,12 +37,8 @@ if not st.session_state.has_been_submitted:
         "Review the summary of your analysis and annotation before submitting it.",
         icon="💡",
     )
-elif st.session_state.get("evaluation_result"):
-    st.success(
-        "Evaluation completed. Find the results below.",
-        icon="✅",
-    )
-elif not "evaluation_result" in st.session_state:
+
+if st.session_state.has_been_submitted and not "evaluation_result" in st.session_state:
     # st.json(
     #     {
     #         "submitted argmap": aea.as_api_argmap(),
@@ -72,6 +68,12 @@ elif not "evaluation_result" in st.session_state:
             )
             st.stop()
         st.session_state["evaluation_result"] = evaluation_result
+
+if st.session_state.get("evaluation_result"):
+    st.success(
+        "Evaluation completed. Find the results below.",
+        icon="✅",
+    )
 
 
 st.markdown("### Reason hierarchy")
