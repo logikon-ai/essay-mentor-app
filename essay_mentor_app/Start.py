@@ -92,6 +92,7 @@ def main():
                 tmp_text = markdownify.markdownify(tmp_text)
                 essay_raw = tmp_text
             st.session_state["essay_raw"] = essay_raw
+            st.session_state["example_essay_id"] = ""  # reset example essay
 
     with col2:
         # select example essay
@@ -120,6 +121,7 @@ def main():
             options,
             on_change=paste_example_essay,
             key="example_essay_id",
+            disabled=uploaded_file is not None,
         )
 
     essay_raw = st.text_area(
