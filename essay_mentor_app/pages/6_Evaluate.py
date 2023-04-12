@@ -31,7 +31,7 @@ if not aea.reasons or not any(
     )
     st.stop()
 
-# info with lightbulb icon
+# status info upfront
 if not st.session_state.has_been_submitted:
     st.info(
         "Review the summary of your analysis and annotation before submitting it.",
@@ -42,6 +42,36 @@ elif st.session_state.get("evaluation_result"):
         "Evaluation completed. Find the results below.",
         icon="✅",
     )
+elif not "evaluation_result" in st.session_state:
+    # st.json(
+    #     {
+    #         "submitted argmap": aea.as_api_argmap(),
+    #         "submitted text items": aea.as_api_textContentItems(),
+    #     }
+    # )
+    with st.spinner("Evaluating your essay ..."):
+        try:
+            evaluation_result = backend.utils.get_aea_evaluation(aea)
+        except Exception as e:
+            st.error(
+                "Error while evaluating your essay. Please try again later. (%s)"
+                % e
+            )
+            st.stop()
+        if (
+            not evaluation_result.get("argmap_metrics")
+            or not evaluation_result.get("annotation_metrics")
+            or "error" in evaluation_result.get("argmap_metrics")
+            or "error" in evaluation_result.get("annotation_metrics")
+            or evaluation_result.get("argmap_metrics",{}).get("status", 200) != 200
+            or evaluation_result.get("annotation_metrics",{}).get("status", 200) != 200
+        ):
+            st.error(
+                "Error while evaluating your essay. Please try again later. (%s)"
+                % evaluation_result
+            )
+            st.stop()
+        st.session_state["evaluation_result"] = evaluation_result
 
 
 st.markdown("### Reason hierarchy")
@@ -96,37 +126,7 @@ submit = st.button(
     on_click=on_submit,
 )
 
-if st.session_state.has_been_submitted:
-    if not "evaluation_result" in st.session_state:
-        # st.json(
-        #     {
-        #         "submitted argmap": aea.as_api_argmap(),
-        #         "submitted text items": aea.as_api_textContentItems(),
-        #     }
-        # )
-        with st.spinner("Evaluating your essay ..."):
-            try:
-                evaluation_result = backend.utils.get_aea_evaluation(aea)
-            except Exception as e:
-                st.error(
-                    "Error while evaluating your essay. Please try again later. (%s)"
-                    % e
-                )
-                st.stop()
-            if (
-                not evaluation_result.get("argmap_metrics")
-                or not evaluation_result.get("annotation_metrics")
-                or "error" in evaluation_result.get("argmap_metrics")
-                or "error" in evaluation_result.get("annotation_metrics")
-                or evaluation_result.get("argmap_metrics",{}).get("status", 200) != 200
-                or evaluation_result.get("annotation_metrics",{}).get("status", 200) != 200
-            ):
-                st.error(
-                    "Error while evaluating your essay. Please try again later. (%s)"
-                    % evaluation_result
-                )
-                st.stop()
-            st.session_state["evaluation_result"] = evaluation_result
+if st.session_state.get("evaluation_result"):
 
     st.markdown("## Evaluation")
 
