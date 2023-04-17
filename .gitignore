@@ -2,6 +2,7 @@
 *__pycache__*
 *.pyc
 *.svg
+.streamlit/config.toml
 .streamlit/secrets.toml
 resources
 Dockerfile
