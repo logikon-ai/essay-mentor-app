@@ -65,9 +65,13 @@ EX4_DEBUGGING: str = """# Eating Animals
 
 In this essay, I will ponder the question whether it's ok to eat animals. My ultimate answer is no.
 
-To begin with, and that is my first argument against eating animals, animal farming contributes to climate heating.
+To begin with, and that is my first argument against eating animals, animal farming contributes to climate heating. As the last IPCC repotrt has shown, the climate is heating up. This is due to the fact that we humans are burning fossil fuels. However, animal farming also contributes to climate heating. This is because the animals produce a lot of methane, which is a greenhouse gas. Moreover, the animals need a lot of food, which is produced by burning fossil fuels.
 
-Moreover, numerous studies have shown that animals have feelings and can suffer, especially when they are farmed and slaughtered.
+Moreover, numerous studies have shown that animals have feelings and can suffer, especially when they are farmed and slaughtered. For example, a study by the University of Cambridge has shown that pigs are able to recognize their own reflection in a mirror. This means that they are aware of their own existence. 
 
-Finally, animal farming creates a lot of joy and happiness: For farmers, children, and last but not least for the happy animals themselves.
+It is sometimes argued that we need to eat animals because they are a source of protein. However, this is not true. There are many other sources of protein, such as beans, nuts, and soy. Moreover, it is not true that we need to eat meat. We can also get all the nutrients we need from plants.
+
+Finally, animal farming creates a lot of joy and happiness: For farmers, children, and last but not least for the happy animals themselves. I grant this argument, but I still think that we should not eat animals.
+
+In conclusion, I think that we should not eat animals. This is because animal farming contributes to climate heating, animals have feelings, and we can get all the nutrients we need from plants.
 """

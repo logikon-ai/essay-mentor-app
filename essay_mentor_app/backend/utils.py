@@ -22,12 +22,58 @@ def page_init(is_startpage=False):
         st.session_state.update(st.session_state)  # for multi-page state preservation
     if not st.session_state.get("logged_in") and not is_startpage:
         switch_page("Start")
+    if 'sidebar_state' not in st.session_state:
+        st.session_state.sidebar_state = 'collapsed'    
     st.set_page_config(
         page_title="Tessy - Essay Tutor",
         page_icon="👩‍🏫",
+        initial_sidebar_state=st.session_state.sidebar_state,
     )
     if not "aea" in st.session_state and not is_startpage:
         switch_page("Start")
+
+def logged_in():
+    """returns `True` if user is logged in via correct password and server is available"""
+
+    def password_entered():
+        """Checks whether a password entered by the user is correct."""
+        if st.session_state["password"] == st.secrets["app_password"]:
+            st.session_state["password_correct"] = True
+            del st.session_state["password"]  # don't store password
+        else:
+            st.session_state["password_correct"] = False
+
+    if st.session_state.get("logged_in"):
+        return True
+
+    st.text_input(
+        "Please enter the password to access the app:",
+        type="password",
+        key="password",
+        on_change=password_entered,
+    )
+
+    if not "password_correct" in st.session_state:
+        return False
+
+    if not st.session_state.get("password_correct"):
+        st.error("😕 Password incorrect")   
+        return False
+    
+    try:
+        page = requests.get(st.secrets["logikon_server"]["url"]+"/ui")
+        status = page.status_code
+    except requests.exceptions.ConnectionError:
+        status = 500
+
+    if status != 200:
+        st.error("Logikon server not reachable. Please try again later or contact Logikon staff.", icon="🚨")
+        return False
+
+    st.session_state["logged_in"] = True
+    st.session_state["sidebar_state"] = 'expanded'
+    st.experimental_rerun()
+
 
 
 def clear_associated_keys(content_elements: List[BaseContentItem]):

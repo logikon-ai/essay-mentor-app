@@ -4,7 +4,6 @@ from io import StringIO
 import markdown
 import markdownify
 from PyPDF2 import PdfReader
-import requests
 
 import streamlit as st
 from streamlit_extras.switch_page_button import switch_page
@@ -14,7 +13,7 @@ import backend.components as components
 import backend.examples
 import backend.utils
 
-DEBUG = True
+DEBUG = False
 
 
 # init
@@ -27,17 +26,8 @@ def main():
     st.session_state.update(st.session_state)  # for multi-page state preservation
     st.session_state["DEBUG"] = DEBUG
 
-    if not st.session_state.get("logged_in"):
-        try:
-            page = requests.get(st.secrets["logikon_server"]["url"]+"/ui")
-            status = page.status_code
-        except requests.exceptions.ConnectionError:
-            status = 500
-        if status == 200:
-            st.session_state["logged_in"] = True
-        else:
-            st.error("Logikon server not reachable. Please try again later or contact Logikon staff.", icon="🚨")
-            st.stop()
+    if not backend.utils.logged_in():
+        st.stop()
 
     if not "aea" in st.session_state:
         st.session_state["aea"] = ArgumentativeEssayAnalysis()
@@ -109,7 +99,7 @@ def main():
                 st.session_state["essay_raw"] = backend.examples.EX2_VEGANISM_PAPERSOWL
             elif st.session_state.example_essay_id == "Example 3 (Critical Thinking)":
                 st.session_state["essay_raw"] = backend.examples.EX3_CRITTHINK
-            elif st.session_state.example_essay_id == "Example 4 (Debugging)":
+            elif st.session_state.example_essay_id == "Example 4 (Eating Animals)":
                 st.session_state["essay_raw"] = backend.examples.EX4_DEBUGGING
             else:
                 st.session_state["essay_raw"] = st.session_state.example_essay_id
@@ -119,9 +109,8 @@ def main():
             "Example 1 (Racism)",
             "Example 2 (Veganism)",
             "Example 3 (Critical Thinking)",
+            "Example 4 (Eating Animals)",
         ]
-        if st.session_state.get("DEBUG"):
-            options.append("Example 4 (Debugging)")
         st.selectbox(
             "... or select an example ...",
             options,
