@@ -3,9 +3,9 @@
 **The AI Co-Tutor that supports students in writing better essays, and teachers in grading them.**
 
 ---
-> This is an experimental prototype 🧪 and a proof of concept 🔥 developed by [Logikon AI](http://logikon.ai).
-> 
-> In particular, the app is powered by a medium-sized language model,
+This is an experimental prototype 🧪 and a proof of concept 🔥 developed by [Logikon AI](http://logikon.ai).
+ 
+In particular, the app is powered by a medium-sized language model,
 which has been rudimentarily trained on a small fraction of Logikon's critical thinking dataset only.
 Please do not use it for grading essays -- yet 😉.
 
