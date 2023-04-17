@@ -4,3 +4,4 @@
 *.svg
 .streamlit/secrets.toml
 resources
+Dockerfile
