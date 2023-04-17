@@ -2,4 +2,5 @@
 *.pyc
 *.svg
 .streamlit/secrets.toml
+.vscode
 resources
