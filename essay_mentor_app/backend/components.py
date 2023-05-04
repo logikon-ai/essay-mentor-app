@@ -179,7 +179,7 @@ def display_argument_map(
         graph_svg.strip()
         return graph_svg
     except Exception as exc:
-        st.error(f"Error while generating argument map: {exc}")
+        # st.error(f"Error while generating argument map: {exc}")
         return None
 
 
