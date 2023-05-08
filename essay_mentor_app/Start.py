@@ -45,6 +45,7 @@ def main():
     st.write(
         "**The AI Co-Tutor that supports you in writing better essays, and your teacher in grading them.**"
     )
+    #st.write(f"Demo mode: {st.session_state.get('demo_mode', False)}")
 
     st.warning(
         "This is an experimental prototype 🧪 and a proof of concept 🔥 developed by [Logikon AI](http://logikon.ai).\n\n "
@@ -69,7 +70,9 @@ def main():
     with col1:
         # file uploader
         uploaded_file = st.file_uploader(
-            "You can upload your essay ...", type=["txt", "md", "pdf"]
+            "You can upload your essay ...",
+            type=["txt", "md", "pdf"],
+            disabled=st.session_state.get('demo_mode')
         )
         if uploaded_file is not None:
             essay_raw: str = ""
@@ -114,10 +117,13 @@ def main():
         st.selectbox(
             "... or select an example ...",
             options,
+            index = len(options)-1 if st.session_state.get('demo_mode') else 0,
             on_change=paste_example_essay,
             key="example_essay_id",
-            disabled=uploaded_file is not None,
+            disabled=uploaded_file is not None or st.session_state.get('demo_mode'),
         )
+    if st.session_state.get('demo_mode'):
+        paste_example_essay()
 
     essay_raw = st.text_area(
         "... or directly paste your text here:",

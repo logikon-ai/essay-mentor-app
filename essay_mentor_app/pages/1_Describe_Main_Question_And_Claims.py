@@ -74,7 +74,7 @@ main_question_txt = st.text_area(
     key="main_question",
     value="""Is it ok to eat animals?     
     """
-    if st.session_state.DEBUG
+    if st.session_state.DEBUG or st.session_state.get('demo_mode')
     else "",
     help="*Example:*\n\n" \
     "Is it ok to eat animals?"
@@ -86,7 +86,7 @@ main_claims_txt = st.text_area(
     key="central_claims",
     value="""It is categorically wrong to eat meat.
     """
-    if st.session_state.DEBUG
+    if st.session_state.DEBUG or st.session_state.get('demo_mode')
     else "",
     help="*Example:*\n\n" \
     "It is categorically wrong to eat meat."

@@ -47,11 +47,22 @@ with st.expander(
 st.write("------")
 st.write("Select reasons that are discussed in each corresponding paragraph:")
 
+if st.session_state.get("demo_mode"):
+    initial_assignments = {
+        "002": ["PrA1"],
+        "003": ["PrA2"],
+        "005": ["PrA3"],
+    }
+else:
+    initial_assignments = None
+
+
 reason_assignments = components.display_essay(
     aea.essay_content_items,
     reasons=aea.reasons,
     objections=aea.objections,
     rebuttals=aea.rebuttals,
+    initial_assignments = initial_assignments,
     has_been_submitted=st.session_state.has_been_submitted,
 )
 

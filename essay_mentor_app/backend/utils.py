@@ -24,8 +24,11 @@ def page_init(is_startpage=False):
         switch_page("Start")
     if 'sidebar_state' not in st.session_state:
         st.session_state.sidebar_state = 'collapsed'    
+    page_title = "Tessy - Essay Tutor"
+    if st.session_state.get("demo_mode"):
+        page_title += " (🛣️)"
     st.set_page_config(
-        page_title="Tessy - Essay Tutor",
+        page_title=page_title,
         page_icon="👩‍🏫",
         initial_sidebar_state=st.session_state.sidebar_state,
     )
@@ -50,8 +53,10 @@ def logged_in():
         "Please enter the password to access the app:",
         type="password",
         key="password",
-        on_change=password_entered,
+        #on_change=password_entered,
     )
+    st.checkbox("Demo mode 🛣️", key="demo_mode")
+    st.button("Login", on_click=password_entered)
 
     if not "password_correct" in st.session_state:
         return False

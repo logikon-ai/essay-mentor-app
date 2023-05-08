@@ -65,8 +65,8 @@ reasons, _ = components.input_reasons(
     "farmed and slaughtered.\n\n"
     "Animal farming creates a lot of joy and happiness: For farmers, "
     "children, and last but not least for the happy animals "
-    "themselves. This joy wpould be gone if we didn't eat meat."
-    if st.session_state.DEBUG
+    "themselves. This joy would be gone if we didn't eat meat."
+    if st.session_state.DEBUG or st.session_state.get('demo_mode')
     else "",
     help="*Example (two primary arguments for the claim that it is wrong to eat meat):*\n\n"
     "Animal farming, and hence meat consumption, contributes to climate heating.\n\n"

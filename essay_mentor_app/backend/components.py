@@ -42,6 +42,7 @@ def display_essay(
     reasons: List[Reason] = None,
     objections: List[Reason] = None,
     rebuttals: List[Reason] = None,
+    initial_assignments: Dict[str, List[str]] = None,
     has_been_submitted: bool = False,
 ) -> Optional[Dict[str, List[str]]]:
     """multifunctional component
@@ -67,9 +68,13 @@ def display_essay(
         else:
             paragraph_placeholder = st.empty()
             if reason_labels:
+                if initial_assignments:
+                    initial_selection = initial_assignments.get(element.label, [])
+                    initial_selection = [rl for rl in initial_selection if rl in reason_labels.keys()]
                 label_assignments[element.uid] = st.multiselect(
                     "Reasons discussed in paragraph quoted above (if any):",
                     options=list(reason_labels.keys()),
+                    default=initial_selection if initial_assignments else [],
                     key=f"multiselect_assreas_{element.uid}",
                     disabled=has_been_submitted,
                 )
