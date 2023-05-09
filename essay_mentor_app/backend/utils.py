@@ -15,7 +15,7 @@ from essay_mentor_app.backend.aea_datamodel import (
     Reason,
 )
 
-_REQUEST_TIMEOUT = 240
+_REQUEST_TIMEOUT = 480
 
 def page_init(is_startpage=False):
     if not is_startpage:
